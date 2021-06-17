@@ -1,0 +1,7 @@
+(include_subdirs unqualified)
+
+(library
+    (name kernel)
+    (inline_tests)
+    (libraries base stdio)
+    (preprocess (pps ppx_expect)))
