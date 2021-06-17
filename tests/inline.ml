@@ -17,6 +17,8 @@ let%expect_test _ =
   [%expect{| 0 |}];
   chk_exp [] Star;
   [%expect{| Box |}];
+  chk_exp [] (Pi(Star, Bound(0)));
+  [%expect{||}];
   chk_exp [] Box;
   [%expect{| Box is not typeable |}];
   chk_exp [("P", Pi(Free("S"),Star)); ("S", Star)]
