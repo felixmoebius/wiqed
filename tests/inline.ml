@@ -33,4 +33,25 @@ let%expect_test _ =
     (Lambda(
       Pi(Free("S"), Pi(Free("S"), Star)), 
       Lambda(Free("S"), App(App(Bound(1),Bound(0)),Bound(0)))));
-  [%expect{| (Pi (Pi S . (Pi S . *)) . (Pi S . *)) |}]
+  [%expect{| (Pi (Pi S . (Pi S . *)) . (Pi S . *)) |}];
+  chk_exp [] (
+    Lambda(
+      Star, 
+      Lambda(
+        Bound(0), 
+        Bound(0)
+        )));
+  [%expect{| (Pi * . (Pi 0 . 1)) |}]
+  (* chk_exp [] (
+    Lambda(
+      Star, 
+      Lambda(
+        Pi(Bound(0), Star), 
+        Lambda(
+          Bound(1), 
+          Pi(
+            App(
+              Bound(1), 
+              Bound(0)),
+            bottom)))));
+  [%expect{||}] *)

@@ -25,16 +25,25 @@ let rec string_of_exp exp =
     | Pi(t, e)     ->
         concat ["(Pi "; string_of_exp t; " . "; string_of_exp e; ")"]
     | App(l, r)    ->
-        concat ["("; string_of_exp l; string_of_exp r; ")"]
+        concat ["("; string_of_exp l; " "; string_of_exp r; ")"]
 
 let rec _open exp k u = match exp with
     | Box | Star | Free(_) -> exp
-    | Bound(i) -> if equal i k then u else exp
-    | App(f, x) -> App(_open f k u, _open x k u)
+    | Bound(i)      -> if equal i k then u else exp
+    | App(t1, t2)   -> App(_open t1 k u, _open t2 k u)
     | Lambda(_T, e) -> Lambda(_open _T k u, _open e (k + 1) u)
-    | Pi(_T, e) -> Pi(_open _T k u, _open e (k + 1) u)
+    | Pi(_T, e)     -> Pi(_open _T k u, _open e (k + 1) u)
 
 let open0 e u = _open e 0 u
+
+let rec _close exp k x = match exp with
+    | Box | Star | Bound(_) -> exp
+    | Free(x')      -> if String.equal x x' then Bound(k) else exp
+    | App(t1, t2)   -> App(_close t1 k x, _close t2 k x)
+    | Lambda(_T, e) -> Lambda(_close _T k x, _close e (k + 1) x)
+    | Pi(_T, e)     -> Pi(_close _T k x, _close e (k + 1) x)
+
+let close0 e x = _close e 0 x
 
 let rec normalize exp = match exp with
     (* atom *)
@@ -70,13 +79,25 @@ let rec alpha_eq e1 e2 = match e1, e2 with
 
 let beta_eq e1 e2 = alpha_eq (normalize e1) (normalize e2)
 
-let fresh_counter = ref 1
+(* let fresh_counter = ref 1
 let fresh_name () =
 	let i = !fresh_counter in fresh_counter := i + 1;
-	let i = Int.to_string i in "@" ^ i
+	let i = Int.to_string i in "@" ^ i *)
 
-let rec type_of ctx exp = 
+
+
+let rec type_of' ctx exp d = 
     let open Result.Monad_infix in
+    (* Stdio.print_endline 
+    (String.concat [
+        "("; Int.to_string d; ") ";
+        (String.concat
+            (List.append
+                (List.map (List.rev ctx) ~f: (fun (n, t) 
+                 -> String.concat ["("; n; ": "; string_of_exp t; "), "]))
+                [" |- "; string_of_exp exp]
+            )
+    )]); *)
     match exp with
     | Star -> (match ctx with
         (* axiom *)
@@ -86,7 +107,7 @@ let rec type_of ctx exp =
         | (_, _A) :: ctx' ->
             (* type check _A before discarding x: _A from ctx
             try again with stronger context ctx' *)
-            type_of ctx' _A >>= fun _ -> type_of ctx' exp
+            type_of' ctx' _A (d+1) >>= fun _ -> type_of' ctx' exp (d+1)
         )
 
     | Free(x') -> (match ctx with
@@ -95,47 +116,52 @@ let rec type_of ctx exp =
 
         (* x' needs to be recorded in ctx *)
         | (x, _A) :: ctx' ->
-            let tA = type_of ctx' _A in
+            let tA = type_of' ctx' _A (d+1) in
             match tA with 
-            | Ok(_) -> if equal_string x x' then Ok _A else type_of ctx' exp
+            | Ok(_) -> if equal_string x x' then Ok _A else type_of' ctx' exp (d+1)
             | _ -> tA
         )
         
     | Pi(_A, _B) ->
         (* ensure _A is well-typed *)
-        type_of ctx _A >>= fun _ ->
+        type_of' ctx _A (d+1) >>= fun _ ->
 
             (* open abstraction with fresh name *)
-            let name = fresh_name () in
+            let name = "@" ^ Int.to_string d in
             let _B' = open0 _B (Free(name)) in
 
             (* record 'name: _A' in context an check _B *)
-            type_of ((name, _A) :: ctx) _B'
+            type_of' ((name, _A) :: ctx) _B' (d+1)
 
 
     (* appl *)
     | App(m, n) ->
-        type_of ctx m >>= (function
+        type_of' ctx m (d+1) >>= (function
             | Pi(_A, _B) -> 
-                type_of ctx n >>= (fun _A' ->
-                    if not (beta_eq _A _A') then Error("")
+                type_of' ctx n (d+1) >>= (fun _A' ->
+                    if not (beta_eq _A _A') then 
+                        Error("type mismatch in application")
                     else Ok(open0 _B _A))
             | _ -> 
                 Error("expected Pi abstraction"))
 
     | Lambda(_A, b) ->
-        let name = fresh_name () in
-        (match type_of ((name, _A) :: ctx) (open0 b (Free(name))) with
+        let name = "@" ^ Int.to_string d in
+        (match type_of' ((name, _A) :: ctx) (open0 b (Free(name))) (d+1) with
         | Error(e) -> Error e
         |   Ok(_B) ->
-            (match type_of ctx (Pi(_A, _B)) with
+            let t = Pi((close0 _A name), (close0 _B name)) in
+            (match type_of' ctx t (d+1) with
             | Error(e) -> Error(e)
-            |    Ok(_) -> Ok(Pi(_A, _B))
+            |    Ok(_) -> Ok(t)
             )
         )
 
-    | Box -> Error("Box is not typeable")
-    | _ -> Error("")
+    | Box      -> Error("Box is not typeable")
+    | Bound(i) -> Error(String.concat 
+        ["bound variable "; Int.to_string i; " outside abstraction"])
+
+let type_of ctx exp = type_of' ctx exp 0
     
 let check ctx exp typ = (function 
     | Error(_) -> false 
