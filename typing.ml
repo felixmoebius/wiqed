@@ -79,13 +79,6 @@ let rec alpha_eq e1 e2 = match e1, e2 with
 
 let beta_eq e1 e2 = alpha_eq (normalize e1) (normalize e2)
 
-(* let fresh_counter = ref 1
-let fresh_name () =
-	let i = !fresh_counter in fresh_counter := i + 1;
-	let i = Int.to_string i in "@" ^ i *)
-
-
-
 let rec type_of' ctx exp d = 
     let open Result.Monad_infix in
     (* Stdio.print_endline 
