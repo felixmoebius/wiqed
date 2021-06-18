@@ -41,8 +41,8 @@ let%expect_test _ =
         Bound(0), 
         Bound(0)
         )));
-  [%expect{| (Pi * . (Pi 0 . 1)) |}]
-  (* chk_exp [] (
+  [%expect{| (Pi * . (Pi 0 . 1)) |}];
+  chk_exp [] (
     Lambda(
       Star, 
       Lambda(
@@ -54,4 +54,4 @@ let%expect_test _ =
               Bound(1), 
               Bound(0)),
             bottom)))));
-  [%expect{||}] *)
+  [%expect{| (Pi * . (Pi (Pi 0 . *) . (Pi 1 . *))) |}]
