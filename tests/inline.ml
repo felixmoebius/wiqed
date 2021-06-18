@@ -23,5 +23,19 @@ let%expect_test _ =
   [%expect{| Box is not typeable |}];
   chk_exp [("P", Pi(Free("S"),Star)); ("S", Star)]
     (Lambda(Free("S"),Pi(App(Free("P"),Bound(0)),bottom)));
-  [%expect{| (Pi S . *) |}]
-  
+  [%expect{| (Pi S . *) |}];
+  chk_exp [("S", Star)] 
+    (Lambda(
+      Pi(Free("S"), Pi(Free("S"), Star)), 
+      Bound(0)));
+  [%expect{| (Pi (Pi S . (Pi S . *)) . (Pi S . (Pi S . *))) |}];
+  (* chk_exp [("S", Star)] 
+    (Lambda(
+      Pi(
+        Free("S"), Pi(Free("S"), Star)
+      ), 
+      Lambda(
+        Free("S"), App(App(Bound(1),Bound(0)),Bound(0))
+      )
+    ));
+  [%expect{||}] *)
