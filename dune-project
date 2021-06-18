@@ -1,15 +1,15 @@
 (lang dune 2.7)
-(name fpm)
+(name wiqed)
 (version 0.0.1)
 
 (generate_opam_files true)
 
-(source (github felixmoebius/fpm))
+(source (github felixmoebius/wiqed))
 (authors "Felix Moebius")
 
 (package
- (name fpm)
- (synopsis "Felix Proof Machine")
+ (name wiqed)
+ (synopsis "WIQED Proof Machine")
  (depends
   (dune (>= 2.7.1))
   (base (>= v0.14.0))
