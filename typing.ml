@@ -70,7 +70,10 @@ let rec alpha_eq e1 e2 = match e1, e2 with
 
 let beta_eq e1 e2 = alpha_eq (normalize e1) (normalize e2)
 
-let fresh_name _ = "x"
+let fresh_counter = ref 1
+let fresh_name () =
+	let i = !fresh_counter in fresh_counter := i + 1;
+	let i = Int.to_string i in "@" ^ i
 
 let rec type_of ctx exp = 
     let open Result.Monad_infix in
@@ -103,7 +106,7 @@ let rec type_of ctx exp =
         type_of ctx _A >>= fun _ ->
 
             (* open abstraction with fresh name *)
-            let name = fresh_name ctx in
+            let name = fresh_name () in
             let _B' = open0 _B (Free(name)) in
 
             (* record 'name: _A' in context an check _B *)
@@ -121,7 +124,7 @@ let rec type_of ctx exp =
                 Error("expected Pi abstraction"))
 
     | Lambda(_A, b) ->
-        let name = fresh_name ctx in
+        let name = fresh_name () in
         (match type_of ((name, _A) :: ctx) (open0 b (Free(name))) with
         | Error(e) -> Error e
         |   Ok(_B) ->
