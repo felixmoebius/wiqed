@@ -194,17 +194,26 @@ let rec type_of' (env : env) ctx exp d =
             | _ -> 
                 Error("expected Pi abstraction"))
 
+    (* lambda _ : _A . b *)
     | Lambda(_A, b) ->
         let name = "@" ^ Int.to_string d in
-        (match type_of' env ((name, _A) :: ctx) (open0 b (Free(name))) (d+1) with
-        | Error(e) -> Error e
-        |   Ok(_B) ->
-            let t = Pi((close0 _A name), (close0 _B name)) in
-            (match type_of' env ctx t (d+1) with
-            | Error(e) -> Error(e)
-            |    Ok(_) -> Ok(t)
-            )
-        )
+        (* open b *)
+        let b' = open0 b (Free name) in
+
+        (*  derive type of b' *)
+        let%bind _B' = type_of' env ((name, _A) :: ctx) b' (d+1) in
+
+        (* we opened b, thus replacing the variable that is bound by
+        the abstraction with the fresh free variable 'name'.
+        We derive b' : _B', but we are looking for b : _B.
+        It follows that _B = (close0 _B name). *)
+        let _B = close0 _B' name in
+        let t = Pi(_A, _B) in
+
+        (* derive (Pi _ : _A . _B) : s, we don't actually care
+        about s, we only care that this typechecks *)
+        let%bind _ = type_of' env ctx t (d+1) in
+        Result.return t
 
     | Def(n, lu) ->
         (* lookup definition *)
