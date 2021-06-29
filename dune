@@ -4,4 +4,4 @@
     (name kernel)
     (inline_tests)
     (libraries base stdio)
-    (preprocess (pps ppx_expect)))
+    (preprocess (pps ppx_expect ppx_let)))
