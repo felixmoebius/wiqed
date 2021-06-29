@@ -159,16 +159,21 @@ let rec type_of' (env : env) ctx exp d =
       type_of' env ctx' _A (d+1) >>= fun _ -> type_of' env ctx' exp (d+1)
     )
 
-  | Free(x') -> (match ctx with
-    (* cannot derive type_of x' in empty ctx *)
-    | [] -> Error(String.concat ["free var "; x';" not in context"])
+  (* 'x' *)
+  | Free(x) -> 
+    (match ctx with
+    (* cannot derive type_of x in empty ctx *)
+    | [] -> Result.fail (String.concat ["free var "; x; " not in context"])
 
-    (* x' needs to be recorded in ctx *)
-    | (x, _A) :: ctx' ->
-      let tA = type_of' env ctx' _A (d+1) in
-      match tA with 
-      | Ok(_) -> if equal_string x x' then Ok _A else type_of' env ctx' exp (d+1)
-      | _ -> tA
+    (* ctx is not empty, but we don't know yet if x1 = x *)
+    | (x1, _A) :: ctx' ->
+      type_of' env ctx' _A (d+1) >>= fun _ ->
+      if equal_string x1 x
+      (* if x1 == x, then x : _A *)
+      then Result.return _A
+      (* if x1 != x, then we perform weakening by discarding x1 : _A 
+      from the context. We already checked that _A is well-formed *)
+      else type_of' env ctx' exp (d+1)
     )
     
   (* Pi _ : _A . _B *)
