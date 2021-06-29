@@ -2,19 +2,17 @@ open Base
 (* open Result.Monad_infix *)
 open Result.Let_syntax
 
-type id = string
-
 type exp =
   | Box
   | Star
-  | Free   of id
+  | Free   of string
   | Bound  of int
   | Lambda of exp * exp
   | Pi     of exp * exp
   | App    of exp * exp
   | Def    of string * (exp list)
 
-type ctx = (id * exp) list
+type ctx = (string * exp) list
 type def = {
   name: string;
   args: (string * exp) list;
@@ -157,7 +155,7 @@ let rec type_of' env ctx exp d =
     | (_, _A) :: ctx' ->
       (* type check _A before discarding x: _A from ctx.
       try again with stronger context ctx'. *)
-      type_of' env ctx' _A (d+1) >>= fun _ ->
+      type_of' env ctx' _A  (d+1) >>= fun _ ->
       type_of' env ctx' exp (d+1)
     )
 
