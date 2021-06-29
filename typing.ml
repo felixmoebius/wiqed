@@ -171,17 +171,18 @@ let rec type_of' (env : env) ctx exp d =
       | _ -> tA
     )
     
+  (* Pi _ : _A . _B *)
   | Pi(_A, _B) ->
     (* ensure _A is well-typed *)
-    type_of' env ctx _A (d+1) >>= fun _ ->
+    let%bind _ = type_of' env ctx _A (d+1) in
 
-      (* open abstraction with fresh name *)
-      let name = "@" ^ Int.to_string d in
-      let _B' = open0 _B (Free(name)) in
+    (* open abstraction with fresh name *)
+    let name = "@" ^ Int.to_string d in
+    let _B' = open0 _B (Free(name)) in
 
-      (* record 'name: _A' in context an check _B *)
-      type_of' env ((name, _A) :: ctx) _B' (d+1)
-
+    (* record 'name: _A' in context an derive _B : s,
+    where s is also the type of the overall expression *)
+    type_of' env ((name, _A) :: ctx) _B' (d+1)
 
   (* m n *)
   | App(m, n) ->
@@ -241,12 +242,10 @@ let rec type_of' (env : env) ctx exp d =
   | Bound(i) -> Error(String.concat 
     ["bound variable "; Int.to_string i; " outside abstraction"])
 
-
 and check env ctx d u s =
   let error = "type mismatch" in
   let%bind t = type_of' env ctx u d in beta_eq t s 
   |> Result.ok_if_true ~error
-
 
 let type_of ctx exp = type_of' [] ctx exp 0
   
