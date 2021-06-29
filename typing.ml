@@ -144,19 +144,21 @@ let _debug ctx exp d =
       )
   )])
 
-let rec type_of' (env : env) ctx exp d = 
-
+let rec type_of' env ctx exp d = 
   (* _debug ctx exp d; *)
   match exp with
-  | Star -> (match ctx with
-    (* axiom *)
-    | [] -> Ok(Box)
 
-    (* need empty context, so try weakening *)
+  (* '*' *)
+  | Star -> 
+    (match ctx with
+    (* axiom, requires empty context. *)
+    | [] -> Ok(Box)
+    (* context not empty. try weakening. *)
     | (_, _A) :: ctx' ->
-      (* type check _A before discarding x: _A from ctx
-      try again with stronger context ctx' *)
-      type_of' env ctx' _A (d+1) >>= fun _ -> type_of' env ctx' exp (d+1)
+      (* type check _A before discarding x: _A from ctx.
+      try again with stronger context ctx'. *)
+      type_of' env ctx' _A (d+1) >>= fun _ ->
+      type_of' env ctx' exp (d+1)
     )
 
   (* 'x' *)
@@ -164,7 +166,6 @@ let rec type_of' (env : env) ctx exp d =
     (match ctx with
     (* cannot derive type_of x in empty ctx *)
     | [] -> Result.fail (String.concat ["free var "; x; " not in context"])
-
     (* ctx is not empty, but we don't know yet if x1 = x *)
     | (x1, _A) :: ctx' ->
       type_of' env ctx' _A (d+1) >>= fun _ ->
@@ -242,7 +243,6 @@ let rec type_of' (env : env) ctx exp d =
     (* return n[U/X] *)
     Result.return (subst_all xu def.typ')
 
-    
   | Box      -> Error("Box is not typeable")
   | Bound(i) -> Error(String.concat 
     ["bound variable "; Int.to_string i; " outside abstraction"])
