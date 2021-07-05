@@ -18,7 +18,7 @@ let rec _open t k u =
   | Box | Star | Free(_) -> t
   (* lambda _ : typ . e *)
   | Lambda(typ, e) -> Lambda(_open typ k u, _open e (k + 1) u)
-  (* i *)
+  (* de Bruijn index i *)
   | Bound(i) -> 
     if equal i k 
     then u 
@@ -32,7 +32,7 @@ let rec _open t k u =
   | Pi(typ, e) -> Pi(_open typ k u, _open e (k + 1) u)
 
 (* replace all bound variables at de Bruijn index 0.
-this means replacing all 'dangling' indeces that we get by only
+this means replacing all 'dangling' indices that we get by only
 looking at the right hand side of an abstraction *)
 let open0 e u = _open e 0 u
 
@@ -67,7 +67,7 @@ let close0 t x = _close t 0 x
 (* normalize well-typed term *)
 let rec normalize exp = 
   match exp with
-  (* atom *)
+  (* terminal *)
   | Box | Star | Free(_) | Bound(_) -> exp
   (* normalize descendents *)
   | Lambda(typ, e) -> Lambda (normalize typ, normalize e)
@@ -86,7 +86,7 @@ let rec normalize exp =
 (* substitute free variable z in e with u *)
 let rec subst e z u =
   match e with
-  (* atom *)
+  (* terminal *)
   | Box | Star | Bound(_) -> e
   (* subst if z' = z *)
   | Free(z') -> 
@@ -105,23 +105,19 @@ let rec subst e z u =
 the locally-nameless approach makes this very easy, because
 we only need to recursively check the structure of the terms
 and ensure that free variable names and bound variable de Bruijn
-indeces match *)
+indices match *)
 let rec alpha_eq e1 e2 = match e1, e2 with
-  (* atom *)
+  (* terminal *)
   | (Star, Star) | (Box, Box) -> true
-
-  (* matching de Bruijn indeces *)
+  (* matching de Bruijn indices *)
   | (Bound i1, Bound i2) -> equal_int i1 i2
-
   (* matching free variable names *)
   | (Free x1, Free x2) -> equal_string x1 x2
-
   (* equal iff descendents are equal *)
   | (Lambda(l1, r1), Lambda(l2, r2))
   | (Pi    (l1, r1), Pi    (l2, r2))
   | (App   (l1, r1), App   (l2, r2)) ->
     (alpha_eq l1 l2) && (alpha_eq r1 r2)
-
   (* definition name matches and all args are equal *)
   | (Def(n1, a1), Def(n2, a2)) ->
     List.(
@@ -129,7 +125,6 @@ let rec alpha_eq e1 e2 = match e1, e2 with
     | Unequal_lengths -> false
     | Ok(z) ->  for_all z ~f: (fun (x1, x2) -> alpha_eq x1 x2))
     )
-
   (* unequal in all other cases *)
   | _ -> false
 
