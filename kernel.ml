@@ -39,8 +39,8 @@ let rec type_of' env ctx term depth =
       | (_, _A) :: ctx' ->
           (* type check _A before discarding x: _A from ctx.
              try again with stronger context ctx'. *)
-          type_of' env ctx' _A (depth + 1) >>= fun _ -> type_of' env ctx' term (depth + 1)
-      )
+          type_of' env ctx' _A (depth + 1) >>= fun _ ->
+          type_of' env ctx' term (depth + 1) )
   (* 'x' *)
   | Free x -> (
       match ctx with
@@ -73,7 +73,8 @@ let rec type_of' env ctx term depth =
          or has to be fully normalized. *)
       match tm with
       | Pi (_A, _B) ->
-          check env ctx (depth + 1) n _A >>= fun () -> Result.return (open0 _B _A)
+          check env ctx (depth + 1) n _A >>= fun () ->
+          Result.return (open0 _B _A)
       | _ -> Result.fail "expected Pi abstraction" )
   (* lambda _ : _A . b *)
   | Lambda (_A, b) ->
