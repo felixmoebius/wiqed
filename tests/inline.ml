@@ -1,6 +1,6 @@
 open Base
 open Stdio
-open Typing
+open Kernel
 open Term
 
 let print_exp e = print_endline (string_of_exp e)
