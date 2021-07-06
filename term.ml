@@ -10,6 +10,21 @@ type t =
   | App    of t * t
   | Def    of string * (t list)
 
+let rec string_of_exp exp = 
+  let open String in
+  match exp with
+  | Box          -> "Box"
+  | Star         -> "*"
+  | Free(id)     -> id
+  | Bound(i)     -> Int.to_string i
+  | Lambda(t, e) -> 
+    concat ["(lambda "; string_of_exp t; " . "; string_of_exp e; ")"]
+  | Pi(t, e)     ->
+    concat ["(Pi "; string_of_exp t; " . "; string_of_exp e; ")"]
+  | App(l, r)    ->
+    concat ["("; string_of_exp l; " "; string_of_exp r; ")"]
+  | Def(n, _)       -> n
+
 (* replace all bound variables in t at de Bruijn index k 
 with the term u *)
 let rec _open t k u = 
@@ -89,41 +104,42 @@ let rec subst e z u =
   (* terminal *)
   | Box | Star | Bound(_) -> e
   (* subst if z' = z *)
-  | Free(z') -> 
+  | Free z' -> 
     if equal_string z z' 
     then u 
     else e
   (* subst in subterms *)
-  | App(t1, t2)     -> App    (subst t1  z u, subst t2 z u)
-  | Lambda(typ, e') -> Lambda (subst typ z u, subst e' z u)
-  | Pi(typ, e')     -> Pi     (subst typ z u, subst e' z u)
+  | App (t1, t2)     -> App    (subst t1  z u, subst t2 z u)
+  | Lambda (typ, e') -> Lambda (subst typ z u, subst e' z u)
+  | Pi (typ, e')     -> Pi     (subst typ z u, subst e' z u)
   (* subst in all arguments *)
-  | Def(n, a) ->
-    Def(n, List.map a ~f: (fun e' -> subst e' z u))
+  | Def (n, a) ->
+    Def (n, List.map a ~f: (fun e' -> subst e' z u))
 
 (* check for term equality by testing for alpha-conversion.
 the locally-nameless approach makes this very easy, because
 we only need to recursively check the structure of the terms
 and ensure that free variable names and bound variable de Bruijn
 indices match *)
-let rec alpha_eq e1 e2 = match e1, e2 with
+let rec alpha_eq e1 e2 =
+  match (e1, e2) with
   (* terminal *)
-  | (Star, Star) | (Box, Box) -> true
+  | Star, Star | Box, Box -> true
   (* matching de Bruijn indices *)
-  | (Bound i1, Bound i2) -> equal_int i1 i2
+  | Bound i1, Bound i2 -> equal_int i1 i2
   (* matching free variable names *)
-  | (Free x1, Free x2) -> equal_string x1 x2
+  | Free x1, Free x2 -> equal_string x1 x2
   (* equal iff descendents are equal *)
-  | (Lambda(l1, r1), Lambda(l2, r2))
-  | (Pi    (l1, r1), Pi    (l2, r2))
-  | (App   (l1, r1), App   (l2, r2)) ->
+  | Lambda (l1, r1), Lambda (l2, r2)
+  | Pi     (l1, r1), Pi     (l2, r2)
+  | App    (l1, r1), App    (l2, r2) ->
     (alpha_eq l1 l2) && (alpha_eq r1 r2)
   (* definition name matches and all args are equal *)
-  | (Def(n1, a1), Def(n2, a2)) ->
+  | Def (n1, a1), Def (n2, a2) ->
     List.(
     equal_string n1 n2 && (match (zip a1 a2) with
     | Unequal_lengths -> false
-    | Ok(z) ->  for_all z ~f: (fun (x1, x2) -> alpha_eq x1 x2))
+    | Ok z ->  for_all z ~f: (fun (x1, x2) -> alpha_eq x1 x2))
     )
   (* unequal in all other cases *)
   | _ -> false
