@@ -1,12 +1,6 @@
 open Base
 open Result.Let_syntax
 
-let first_err l ~f =
-  let rec loop = function
-    | [] -> Result.return ()
-    | x :: l' -> f x >>= fun _ -> loop l'
-  in
-  loop l
 
 let check_arg_lengths (lu : Term.t list) lxa =
   let error = "arg length mismatch" in
@@ -110,7 +104,7 @@ let rec type_of' env ctx term depth =
 
       (* check U : S *)
       let f (u, s) = check env ctx (depth + 1) u s in
-      let%bind () = first_err (List.zip_exn lu ls) ~f in
+      let%bind () = Utils.first_err (List.zip_exn lu ls) ~f in
 
       (* return n[U/X] *)
       Result.return (Term.subst_all xu def.typ')
