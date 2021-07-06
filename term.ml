@@ -100,6 +100,11 @@ let rec subst e z u =
   (* subst in all arguments *)
   | Def (n, a) -> Def (n, List.map a ~f:(fun e' -> subst e' z u))
 
+let subst_all (xu : (string * t) list) (a : t) =
+  List.fold xu ~init:a ~f:(fun a' (x, u) -> subst a' x u)
+
+let subst_range i xu a = subst_all (List.take xu i) a
+
 (* check for term equality by testing for alpha-conversion.
 the locally-nameless approach makes this very easy, because
 we only need to recursively check the structure of the terms
