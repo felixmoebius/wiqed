@@ -2,6 +2,7 @@
 opam-version: "2.0"
 version: "0.0.1"
 synopsis: "WIQED Proof Machine"
+maintainer: ["felix.moebius@posteo.de"]
 authors: ["Felix Moebius"]
 homepage: "https://github.com/felixmoebius/wiqed"
 bug-reports: "https://github.com/felixmoebius/wiqed/issues"

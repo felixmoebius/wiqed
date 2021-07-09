@@ -6,6 +6,7 @@
 
 (source (github felixmoebius/wiqed))
 (authors "Felix Moebius")
+(maintainers "felix.moebius@posteo.de")
 
 (package
  (name wiqed)
