@@ -22,7 +22,7 @@ let%expect_test _ =
   chk_exp [] (Pi (Star, Bound 0));
   [%expect {| * |}];
   chk_exp [] Box;
-  [%expect {| Box is not typeable |}];
+  [%expect {| Box is not typeable at level (0) |}];
   chk_exp
     [ ("P", Pi (Free "S", Star)); ("S", Star) ]
     (Lambda (Free "S", Pi (App (Free "P", Bound 0), bottom)));
@@ -42,4 +42,16 @@ let%expect_test _ =
          Lambda
            ( Pi (Bound 0, Star),
              Lambda (Bound 1, Pi (App (Bound 1, Bound 0), bottom)) ) ));
-  [%expect {| (Pi * . (Pi (Pi 0 . *) . (Pi 1 . *))) |}]
+  [%expect {| (Pi * . (Pi (Pi 0 . *) . (Pi 1 . *))) |}];
+  chk_exp [ ("A", Star) ] (Pi (Free "A", Star));
+  [%expect {| Box |}];
+  chk_exp [ ("z", Free "A"); ("A", Star) ] (App (Pi (Free "A", Star), Free "z"));
+  [%expect {| expected Pi abstraction at level (0) |}];
+  chk_exp
+    [ ("z", Free "A"); ("A", Star) ]
+    (App (Lambda (Free "A", Star), Free "z"));
+  [%expect {| Box is not typeable at level (3) |}];
+  chk_exp [ ("A", Star) ] (Pi (Free "A", Star));
+  [%expect {| Box |}];
+  chk_exp [ ("A", Star) ] (Lambda (Free "A", Free "A"));
+  [%expect {| (Pi A . *) |}]

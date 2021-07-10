@@ -22,7 +22,7 @@ let _debug ctx exp d =
 
 let rec type_of' env ctx term depth =
   let open Term in
-  (* _debug ctx exp d; *)
+  (* _debug ctx term depth; *)
   match term with
   (* '*' *)
   | Star -> (
@@ -69,7 +69,7 @@ let rec type_of' env ctx term depth =
       | Pi (_A, _B) ->
           check env ctx (depth + 1) n _A >>= fun () ->
           Result.return (open0 _B _A)
-      | _ -> Result.fail "expected Pi abstraction" )
+      | _ -> Result.fail ("expected Pi abstraction at level (" ^ (Int.to_string depth) ^ ")"))
   (* lambda _ : _A . b *)
   | Lambda (_A, b) ->
       let name = "@" ^ Int.to_string depth in
@@ -108,7 +108,7 @@ let rec type_of' env ctx term depth =
 
       (* return n[U/X] *)
       Result.return (Term.subst_all xu def.typ')
-  | Box -> Error "Box is not typeable"
+  | Box -> Error ("Box is not typeable at level (" ^ (Int.to_string depth) ^ ")")
   | Bound i ->
       Error
         (String.concat
