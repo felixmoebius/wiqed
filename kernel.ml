@@ -20,6 +20,7 @@ let _debug ctx exp d =
               [ " |- "; Term.string_of_exp exp ]);
        ])
 
+
 let rec type_of' env ctx term depth =
   let open Term in
   (* _debug ctx term depth; *)
@@ -121,7 +122,7 @@ and check env ctx d u s =
 
 let type_of ctx exp = type_of' [] ctx exp 0
 
-let check ctx exp typ =
+let check_bool ctx exp typ =
   (function Error _ -> false | Ok t -> Term.beta_eq typ t) (type_of ctx exp)
 
 let normalized_type_of ctx exp =

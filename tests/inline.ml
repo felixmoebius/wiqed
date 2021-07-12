@@ -55,25 +55,23 @@ let%expect_test _ =
   [%expect {| Box |}];
   chk_exp [ ("A", Star) ] (Lambda (Free "A", Free "A"));
   [%expect {| (Pi A . *) |}];
-  chk_exp [ ("z", Free "A"); ("A", Star) ] 
-  (App (Lambda (Free "A", Free "A"), Free "z"));
+  chk_exp
+    [ ("z", Free "A"); ("A", Star) ]
+    (App (Lambda (Free "A", Free "A"), Free "z"));
   [%expect {| * |}];
-  chk_exp [ ("z", Free "A"); ("A", Star) ] 
-  (App (Lambda (Star, Free "A"), Free "A"));
+  chk_exp
+    [ ("z", Free "A"); ("A", Star) ]
+    (App (Lambda (Star, Free "A"), Free "A"));
   [%expect {| * |}];
-  chk_exp [ ("z", Free "A"); ("A", Star) ] 
-  (Lambda (Star, Star));
+  chk_exp [ ("z", Free "A"); ("A", Star) ] (Lambda (Star, Star));
   [%expect {| Box is not typeable at level (2) |}];
-  chk_exp [] 
-  (Pi (Star, Star));
+  chk_exp [] (Pi (Star, Star));
   [%expect {| Box |}];
-  chk_exp [] 
-  (Pi (Star, Box));
+  chk_exp [] (Pi (Star, Box));
   [%expect {| Box is not typeable at level (1) |}];
-
   chk_exp [ ("A", Star) ] (Pi (Free "A", Star));
   [%expect {| Box |}];
-  chk_exp [ ("z", Free "A"); ("A", Star) ] 
-  (Pi ((App (Lambda (Free "A", Free "A"), Free "z")), Star));
-  [%expect {| Box |}];
-  
+  chk_exp
+    [ ("z", Free "A"); ("A", Star) ]
+    (Pi (App (Lambda (Free "A", Free "A"), Free "z"), Star));
+  [%expect {| Box |}]
