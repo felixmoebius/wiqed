@@ -1,9 +1,10 @@
 open Base
 open Stdio
-open Kernel
 open Term
 
 let print_exp e = print_endline (string_of_exp e)
+
+let normalized_type_of = Kernel.infer_normalized Universe.empty
 
 let chk_exp ctx exp =
   match normalized_type_of ctx exp with
