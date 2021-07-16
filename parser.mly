@@ -15,7 +15,7 @@
 
 prog :
   | EOF            { None }
-  | e = expression { Some e }
+  | e = expression; EOF { Some e }
   ;
 
 expression:
