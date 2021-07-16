@@ -1,44 +1,84 @@
 %token <int> INDEX
-%token <string> IDENTIFIER
+%token <string> FREE
+%token <string> GLOBAL
 %token LPAREN
 %token RPAREN
 %token LAMBDA
 %token PI
 %token DOT
+%token COLON
+%token COMMA
 %token EOF
 %token STAR
 %token BOX
+%token AXIOM
+%token THEOREM
+%token PROOF
+%token QED
+%token DONE
 
-%start <Term.t option> prog
+
+%start <Syntax.prog> prog
 
 %%
 
-prog :
-  | EOF            { None }
-  | e = expression; EOF { Some e }
+prog: l = list(theorem_or_axiom); EOF { l } ;
+
+theorem_or_axiom:
+  | t = theorem { t }
+  | a = axiom   { a }
   ;
+
+theorem:
+  | THEOREM; n = GLOBAL; LPAREN; p = parameter_list; RPAREN; COLON; e1 = expression; PROOF; e2 = expression; QED
+    { let t: Syntax.theorem = {
+      name = n;
+      parameter_list = p;
+      proposition = e1;
+      proof = e2
+    } in Syntax.Theorem (t) }
+  ;
+
+axiom:
+  | AXIOM; n = GLOBAL; LPAREN; p = parameter_list; RPAREN; COLON; 
+    e1 = expression; DONE
+    { let a: Syntax.axiom = {
+      name = n;
+      parameter_list = p;
+      proposition = e1;
+    } in Syntax.Axiom (a) }
+  ;
+
+parameter_list: 
+  p = separated_list(COMMA, parameter) { p } ;
+
+parameter: n = FREE; COLON; e = expression { (n, e) };
 
 expression:
   | LAMBDA; e1 = expression; DOT; e2 = expression
-    { Term.Lambda (e1, e2) }
+    { Syntax.Lambda (e1, e2) }
   | PI; e1 = expression; DOT; e2 = expression
-    { Term.Pi (e1, e2) }
+    { Syntax.Pi (e1, e2) }
   | a = application 
     { a }
+  | n = GLOBAL; LPAREN; a = argument_list; RPAREN
+    { Syntax.Instance (n, a) }
   ;
+
+argument_list: args = separated_list(COMMA, expression) { args } ;
 
 application:
   | e = simple 
     { e }
   | e1 = application; e2 = simple
-    { Term.App (e1, e2) }
+    { Syntax.Application (e1, e2) }
   ;
 
 simple:
   | LPAREN; e = expression; RPAREN
     { e }
-  | x = IDENTIFIER { Term.Free x }
-  | i = INDEX { Term.Bound i }
-  | STAR { Term.Star }
-  | BOX { Term.Box }
+  | x = FREE { Syntax.Free x }
+  | i = INDEX { Syntax.Index i }
+  | STAR { Syntax.Star }
+  | BOX { Syntax.Box }
   ;

@@ -1,10 +1,11 @@
 (include_subdirs unqualified)
 
+(ocamllex lexer)
 (menhir
   (modules parser))
 
 (library
     (name wiqed)
     (inline_tests)
-    (libraries base stdio)
+    (libraries core base stdio)
     (preprocess (pps ppx_expect ppx_let)))

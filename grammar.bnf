@@ -1,7 +1,33 @@
+prog =
+    | list(theorem_or_axiom)
+
+theorem_or_axiom =
+    | theorem
+    | axiom
+
+theorem =
+    | THEOREM a LPAREN parameter_list RPAREN COLON expression PROOF expression QED
+
+axiom =
+    | AXIOM a LPAREN parameter_list RPAREN COLON expression DONE
+
+parameter_list =
+    | separated_list(COMMA, parameter)
+
+parameter =
+    | FREE COLON expression
+
 expression =
+    | instantiation
     | application
     | LAMBDA expression DOT expression
     | PI expression DOT expression
+
+instantiation =
+    | GLOBAL LPAREN argument_list RPAREN
+
+argument_list =
+    | separated_list(COMMA, expression)
 
 application =
     | simple
@@ -9,5 +35,5 @@ application =
 
 simple =
     | LPAREN expression RPAREN
-    | IDENTIFIER
+    | FREE
     | INDEX

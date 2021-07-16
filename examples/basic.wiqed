@@ -1,0 +1,11 @@
+
+THEOREM
+    Church_Rosser (x1: A1, x2: A2) : 
+PROOF
+
+QED
+
+AXIOM
+    Some_Axiom (premiss: Premiss) : Conclusion
+DONE
+

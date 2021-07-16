@@ -14,6 +14,7 @@
  (depends
   (dune (>= 2.7.1))
   (menhir (>= 20201216))
+  (core (>= v0.14.0))
   (base (>= v0.14.0))
   (stdio (>= v0.14.0))
   (ppx_let (>= v0.14.0))
