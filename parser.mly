@@ -30,7 +30,7 @@ expression:
 application:
   | e = simple 
     { e }
-  | e1 = application; e2 = application
+  | e1 = application; e2 = simple
     { Term.App (e1, e2) }
   ;
 
