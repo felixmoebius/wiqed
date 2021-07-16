@@ -17,3 +17,4 @@
   (stdio (>= v0.14.0))
   (ppx_let (>= v0.14.0))
   (ppx_expect (>= v0.14.0))))
+(using menhir 2.1)

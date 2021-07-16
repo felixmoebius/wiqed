@@ -1,5 +1,8 @@
 (include_subdirs unqualified)
 
+(menhir
+  (modules parser))
+
 (library
     (name wiqed)
     (inline_tests)

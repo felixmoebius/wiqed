@@ -1,0 +1,13 @@
+expression =
+    | application
+    | LAMBDA expression DOT expression
+    | PI expression DOT expression
+
+application =
+    | simple
+    | application simple
+
+simple =
+    | LPAREN expression RPAREN
+    | IDENTIFIER
+    | INDEX
