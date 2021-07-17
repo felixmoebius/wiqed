@@ -16,5 +16,3 @@ let verify (input : Input.t) : (unit, string) Result.t =
   let%bind prog = Astgen.parse input.lexbuf in
   let defs = Lowering.lower prog in
   verify_all defs Universe.empty
-
-  

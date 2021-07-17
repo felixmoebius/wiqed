@@ -1,0 +1,4 @@
+(executable
+  (name       wiqed)
+  (libraries  core libwiqed)
+  (preprocess (pps ppx_jane)))
