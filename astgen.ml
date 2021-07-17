@@ -2,16 +2,21 @@ open Core
 open Lexer
 open Lexing
 
-let print_position outx lexbuf =
+let get_position lexbuf =
   let pos = lexbuf.lex_curr_p in
-  fprintf outx "%s:%d:%d" pos.pos_fname
+  sprintf "%s:%d:%d" pos.pos_fname
     pos.pos_lnum (pos.pos_cnum - pos.pos_bol + 1)
 
-let parse_with_error lexbuf =
-  try Parser.prog Lexer.read lexbuf with
+let parse lexbuf : (Syntax.prog, string) result =
+  try Result.return (Parser.prog Lexer.read lexbuf) with
   | SyntaxError msg ->
-    fprintf stderr "%a: %s\n" print_position lexbuf msg;
-    []
+      let s = sprintf "%s: %s" (get_position lexbuf) msg in
+      Result.fail s
+
   | Parser.Error ->
-    fprintf stderr "%a: syntax error\n" print_position lexbuf;
-    exit (-1)
+      let s = sprintf  "%s: syntax error" (get_position lexbuf) in
+      Result.fail s
+
+  | _ -> 
+      let s = sprintf "%s: unknown error" (get_position lexbuf) in
+      Result.fail s

@@ -26,6 +26,7 @@ rule read =
   | "pi"      { PI }
   | "Theorem" { THEOREM }
   | "Axiom"   { AXIOM }
+  | "Proof"   { PROOF }
   | "Qed"     { QED }
   | "Done"    { DONE }
   | '.'       { DOT }
@@ -38,4 +39,5 @@ rule read =
   | free      { FREE (Lexing.lexeme lexbuf) }
   | global    { GLOBAL (Lexing.lexeme lexbuf) }
   | index     { INDEX (int_of_string (Lexing.lexeme lexbuf)) }
+  | _ { raise (SyntaxError ("Unexpected character: " ^ Lexing.lexeme lexbuf)) }
   | eof       { EOF }
