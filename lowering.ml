@@ -27,3 +27,9 @@ let lower_axiom (a : Syntax.axiom) : string * Definition.t =
         (name, lower_expression exp))
   and typ = lower_expression a.proposition in
   (a.name, Definition.make_axiom ~context ~typ)
+
+let lower_toplevel = function
+  | Syntax.Theorem t -> lower_theorem t
+  | Syntax.Axiom a -> lower_axiom a
+
+let lower = List.map ~f:lower_toplevel
