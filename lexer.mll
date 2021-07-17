@@ -12,7 +12,7 @@ let next_line lexbuf =
     }
 }
 
-let index    = ['1'-'9'] ['0'-'9']*
+let index    = ['0'-'9'] ['0'-'9']*
 let free     = ['a'-'z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
 let global   = ['A'-'Z'] ['a'-'z' 'A'-'Z' '0'-'9' '_']*
 let white    = [' ' '\t']+

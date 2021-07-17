@@ -13,8 +13,9 @@ let parse_and_print s =
 let%expect_test _ =
   let test = parse_and_print in
 
-  test "\n";
-  [%expect {| |}];
+  test "\n"; [%expect {| |}];
+  test ""; [%expect {| |}];
+  test " \t \n"; [%expect {| |}];
 
   test {|
     Axiom
@@ -36,6 +37,70 @@ let%expect_test _ =
       Name(x1: a1) : a2
     Proof
       x2
+    Qed |}];
+
+  test {|
+    Theorem
+      Name1(x1: a1) : a2
+    Proof
+      x2
+    Qed 
+    
+    Theorem
+      Name2(x1: a1) : a2
+    Proof
+      x2
+    Qed |};
+  [%expect {|
+    Theorem
+      Name1(x1: a1) : a2
+    Proof
+      x2
+    Qed
+
+    Theorem
+      Name2(x1: a1) : a2
+    Proof
+      x2
+    Qed |}];
+
+  test {|
+    Theorem
+      Name(x1: a1) : a2
+    Proof
+      lambda a. x
+    Qed |};
+  [%expect {|
+    Theorem
+      Name(x1: a1) : a2
+    Proof
+      (lambda a . x)
+    Qed |}];
+
+  test {|
+    Theorem
+      Name(x1: a1) : a2
+    Proof
+      lambda a. 1 0
+    Qed |};
+  [%expect {|
+    Theorem
+      Name(x1: a1) : a2
+    Proof
+      (lambda a . (1 0))
+    Qed |}];
+
+  test {|
+    Theorem
+      Name(x1: a1) : a2
+    Proof
+      (pi a. 1 (lambda b. 0 1)) x y
+    Qed |};
+  [%expect {|
+    Theorem
+      Name(x1: a1) : a2
+    Proof
+      (((Pi a . (1 (lambda b . (0 1)))) x) y)
     Qed |}];
 
 

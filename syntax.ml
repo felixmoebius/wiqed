@@ -40,7 +40,7 @@ let rec pp_expression = function
   | Free id -> id
   | Index i -> Int.to_string i
   | Lambda (t, e) ->
-      sprintf "(lambda %s . %s" (pp_expression t) (pp_expression e)
+      sprintf "(lambda %s . %s)" (pp_expression t) (pp_expression e)
   | Pi (t, e) -> sprintf "(Pi %s . %s)" (pp_expression t) (pp_expression e)
   | Application (l, r) -> sprintf "(%s %s)" (pp_expression l) (pp_expression r)
   | Instance (n, a) ->
