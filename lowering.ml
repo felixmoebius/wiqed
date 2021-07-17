@@ -32,4 +32,4 @@ let lower_toplevel = function
   | Syntax.Theorem t -> lower_theorem t
   | Syntax.Axiom a -> lower_axiom a
 
-let lower = List.map ~f:lower_toplevel
+let lower (prog : Syntax.prog) = List.map prog ~f:lower_toplevel
