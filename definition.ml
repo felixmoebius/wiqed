@@ -2,7 +2,7 @@ open Base
 
 type t = Context.t * Term.t option * Term.t
 
-let make_definition ~context ~term ~typ : t =
+let make_theorem ~context ~term ~typ : t =
 (context, Some(term), typ)
 
 let make_axiom ~context ~typ : t =
