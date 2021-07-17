@@ -5,7 +5,7 @@
   (modules parser))
 
 (library
-    (name wiqed)
+    (name libwiqed)
     (inline_tests)
     (libraries core base stdio)
     (preprocess (pps ppx_expect ppx_let)))
