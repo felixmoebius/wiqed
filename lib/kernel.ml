@@ -75,11 +75,11 @@ and infer_type (universe : Universe.t) (context : Context.t) (term : Term.t) (de
   in
 
   let rule_inst name arguments =
-    (* lookup definition *)
+    (* lookup theorem or axiom *)
     let%bind def = Universe.find universe name in
 
-    let parameters = Definition.get_context def
-    and typ = Definition.get_type def in
+    let parameters = Fact.get_context def
+    and typ = Fact.get_type def in
 
     let%bind () = check_arg_lengths arguments parameters in
 

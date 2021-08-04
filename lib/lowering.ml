@@ -13,20 +13,20 @@ let lower_expression (e : Syntax.expression) : Term.t =
   in
   lower e
 
-let lower_theorem (t : Syntax.theorem) : string * Definition.t =
+let lower_theorem (t : Syntax.theorem) : string * Fact.t =
   let context : Context.t =
     List.map t.parameter_list ~f:(fun (name, exp) ->
         (name, lower_expression exp))
   and term = lower_expression t.proof
   and typ = lower_expression t.proposition in
-  (t.name, Definition.make_theorem ~context ~term ~typ)
+  (t.name, Fact.make_theorem ~context ~term ~typ)
 
-let lower_axiom (a : Syntax.axiom) : string * Definition.t =
+let lower_axiom (a : Syntax.axiom) : string * Fact.t =
   let context : Context.t =
     List.map a.parameter_list ~f:(fun (name, exp) ->
         (name, lower_expression exp))
   and typ = lower_expression a.proposition in
-  (a.name, Definition.make_axiom ~context ~typ)
+  (a.name, Fact.make_axiom ~context ~typ)
 
 let lower_toplevel = function
   | Syntax.Theorem t -> lower_theorem t

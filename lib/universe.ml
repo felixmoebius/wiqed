@@ -1,6 +1,6 @@
 open Base
 
-type t = (string, Definition.t, String.comparator_witness) Map.t
+type t = (string, Fact.t, String.comparator_witness) Map.t
 
 let create () : t = Map.empty (module String)
 
