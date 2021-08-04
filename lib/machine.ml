@@ -6,7 +6,7 @@ let verify_all defs universe =
     match dl with
     | [] -> Result.return ()
     | (name, d) :: dl' ->
-        let%bind u' = Engine.add_definition u name d in
+        let%bind u' = Engine.add_fact u name d in
         loop dl' u'
   in 
   loop defs universe

@@ -9,7 +9,7 @@ let lower_expression (e : Syntax.expression) : Term.t =
     | Syntax.Lambda (l, r) -> Term.Lambda (lower l, lower r)
     | Syntax.Pi (l, r) -> Term.Pi (lower l, lower r)
     | Syntax.Application (l, r) -> Term.App (lower l, lower r)
-    | Syntax.Instance (n, args) -> Term.Def (n, List.map args ~f:lower)
+    | Syntax.Instance (n, args) -> Term.Inst (n, List.map args ~f:lower)
   in
   lower e
 

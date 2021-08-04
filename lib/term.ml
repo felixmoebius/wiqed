@@ -8,7 +8,7 @@ type t =
   | Lambda of t * t
   | Pi of t * t
   | App of t * t
-  | Def of string * t list
+  | Inst of string * t list
 
 let rec string_of_exp exp =
   let open String in
@@ -21,7 +21,7 @@ let rec string_of_exp exp =
       concat [ "(lambda "; string_of_exp t; " . "; string_of_exp e; ")" ]
   | Pi (t, e) -> concat [ "(Pi "; string_of_exp t; " . "; string_of_exp e; ")" ]
   | App (l, r) -> concat [ "("; string_of_exp l; " "; string_of_exp r; ")" ]
-  | Def (n, _) -> n
+  | Inst (n, _) -> n
 
 (* replace all bound variables in t at de Bruijn index k 
 with the term u *)
@@ -34,7 +34,7 @@ let rec _open t k u =
   (* de Bruijn index i *)
   | Bound i -> if equal i k then u else t
   (* name(args) *)
-  | Def (name, args) -> Def (name, List.map args ~f:(fun e -> _open e k u))
+  | Inst (name, args) -> Inst (name, List.map args ~f:(fun e -> _open e k u))
   (* t1 t2 *)
   | App (t1, t2) -> App (_open t1 k u, _open t2 k u)
   (* Pi _ : typ . e *)
@@ -54,7 +54,7 @@ let rec _close t k x =
   (* name *)
   | Free name -> if String.equal x name then Bound k else t
   (* name(args) *)
-  | Def (name, args) -> Def (name, List.map args ~f:(fun e -> _close e k x))
+  | Inst (name, args) -> Inst (name, List.map args ~f:(fun e -> _close e k x))
   (* t1 t2 *)
   | App (t1, t2) -> App (_close t1 k x, _close t2 k x)
   (* lambda _ : typ . e *)
@@ -84,7 +84,7 @@ let rec normalize exp =
       | Lambda (_, e) -> normalize (open0 e x)
       (* ...otherwise just return components *)
       | f' -> App (f', normalize x) )
-  | Def _ -> raise (Failure "unfold unimplemented")
+  | Inst _ -> raise (Failure "unfold unimplemented")
 
 (* substitute free variable z in e with u *)
 let rec subst e z u =
@@ -98,7 +98,7 @@ let rec subst e z u =
   | Lambda (typ, e') -> Lambda (subst typ z u, subst e' z u)
   | Pi (typ, e') -> Pi (subst typ z u, subst e' z u)
   (* subst in all arguments *)
-  | Def (n, a) -> Def (n, List.map a ~f:(fun e' -> subst e' z u))
+  | Inst (n, a) -> Inst (n, List.map a ~f:(fun e' -> subst e' z u))
 
 let subst_all (xu : (string * t) list) (a : t) =
   List.fold xu ~init:a ~f:(fun a' (x, u) -> subst a' x u)
@@ -124,7 +124,7 @@ let rec alpha_eq e1 e2 =
   | App (l1, r1), App (l2, r2) ->
       alpha_eq l1 l2 && alpha_eq r1 r2
   (* definition name matches and all args are equal *)
-  | Def (n1, a1), Def (n2, a2) -> (
+  | Inst (n1, a1), Inst (n2, a2) -> (
       List.(
         equal_string n1 n2
         &&

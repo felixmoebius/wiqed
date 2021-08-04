@@ -76,7 +76,7 @@ and infer_type (universe : Universe.t) (context : Context.t) (term : Term.t) (de
 
   let rule_inst name arguments =
     (* lookup theorem or axiom *)
-    let%bind def = Universe.find universe name in
+    let%bind def = Universe.find_fact universe name in
 
     let parameters = Fact.get_context def
     and typ = Fact.get_type def in
@@ -131,7 +131,7 @@ and infer_type (universe : Universe.t) (context : Context.t) (term : Term.t) (de
   | Pi (a, b) -> rule_form a b
   | App (m, n) -> rule_app m n
   | Lambda (a, b) -> rule_abs a b
-  | Def (name, args) -> rule_inst name args
+  | Inst (name, args) -> rule_inst name args
   | Box -> Error ("Box is not typeable at level (" ^ (Int.to_string depth) ^ ")")
   | Bound i ->
       Error
