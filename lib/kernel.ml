@@ -22,43 +22,54 @@ let _debug ctx exp d =
        ])
 
 let rec check_type (universe : Universe.t) (context : Context.t) (term : Term.t) (typ : Term.t) (depth : int) =
-  let error = "type mismatch" in
   let%bind t = infer_type universe context term depth in
+  let error = sprintf "expected %s\nbut infered type is %s" (Term.string_of_exp typ) (Term.string_of_exp t) in
   Term.beta_eq t typ |> Result.ok_if_true ~error
 
 and infer_type (universe : Universe.t) (context : Context.t) (term : Term.t) (depth : int) =
   let open Term in
   (* _debug context term depth; *)
 
-  let rule_form a b =
+  match term with
+  | Star -> rule_axiom_or_weak universe context term depth
+  | Free x -> rule_var_or_weak universe context term depth x
+  | Pi (a, b) -> rule_form universe context depth a b
+  | App (m, n) -> rule_app universe context depth m n
+  | Lambda (a, b) -> rule_abs universe context depth a b
+  | Inst (name, args) -> rule_inst universe context depth name args
+  | Box -> Error ("Box is not typeable at level (" ^ (Int.to_string depth) ^ ")")
+  | Bound i ->
+      Error
+        (String.concat
+           [ "bound variable "; Int.to_string i; " outside abstraction" ])
+
+and rule_form universe context depth a b =
     (* ensure a is well-typed *)
     let%bind _ = infer_type universe context a (depth + 1) in
 
     (* open abstraction with fresh name *)
     let name = "@" ^ Int.to_string depth in
-    let b' = open0 b (Free name) in
+    let b' = Term.open0 b (Free name) in
 
     (* record 'name: a' in context an derive b : s,
         where s is also the type of the overall expression *)
     infer_type universe ((name, a) :: context) b' (depth + 1)
-  in
 
-  let rule_app m n = 
+and rule_app universe context depth m n = 
     let%bind tm = infer_type universe context m (depth + 1) in
-      (* TODO: i think tm has to be in weak head normal form
+      (* TODO: I think tm has to be in weak head normal form
          or has to be fully normalized. *)
     match tm with
     | Pi (a, b) ->
         check_type universe context n a (depth + 1) >>= fun () ->
-        Result.return (open0 b a)
+        Result.return (Term.open0 b a)
     | _ -> 
         Result.fail ("expected Pi abstraction at level (" ^ (Int.to_string depth) ^ ")")
-  in
 
-  let rule_abs a b =
+and rule_abs universe context depth a b =
     let name = "@" ^ Int.to_string depth in
     (* open b *)
-    let b_o = open0 b (Free name) in
+    let b_o = Term.open0 b (Free name) in
 
     (*  derive type of b' *)
     let%bind tb_o = infer_type universe ((name, a) :: context) b_o (depth + 1) in
@@ -67,40 +78,18 @@ and infer_type (universe : Universe.t) (context : Context.t) (term : Term.t) (de
         the abstraction with the fresh free variable 'name'.
         We derive b' : _B', but we are looking for b : _B.
         It follows that _B = (close0 _B name). *)
-    let tb = close0 tb_o name in
-    let t = Pi (a, tb) in
+    let tb = Term.close0 tb_o name in
+    let t = Term.Pi (a, tb) in
 
     (* derive (Pi _ : _A . _B) : s, we don't actually care
         about s, we only care that this typechecks *)
     let%bind _ = infer_type universe context t (depth + 1) in
     Result.return t
-  in
 
-  (* let rule_inst_fact fact arguments =
-    let ctx = Fact.get_context fact
-    and typ = Fact.get_type fact in
+and instantiate universe context depth params args typ =
+    let%bind () = check_arg_lengths args params in
 
-    let%bind () = check_arg_lengths arguments ctx in
-
-    let lx, la = List.unzip ctx in
-    let xu = List.zip_exn lx arguments in
-
-    (* substitute A[U/X] *)
-    let f i a = Term.subst_range i xu a in
-    let ls = List.mapi la ~f in
-
-    (* check U : S *)
-    let f (u, s) = check_type universe context u s (depth + 1) in
-    let%bind () = Utils.first_err (List.zip_exn arguments ls) ~f in
-
-    (* return n[U/X] *)
-    Result.return (Term.subst_all xu typ)
-  in *)
-
-  let instantiate ctx typ args =
-    let%bind () = check_arg_lengths args ctx in
-
-    let lx, la = List.unzip ctx in
+    let lx, la = List.unzip params in
     let xu = List.zip_exn lx args in
 
     (* substitute A[U/X] *)
@@ -113,31 +102,28 @@ and infer_type (universe : Universe.t) (context : Context.t) (term : Term.t) (de
 
     (* return n[U/X] *)
     Result.return (Term.subst_all xu typ)
-  in
 
-  let rule_inst name args =
+and rule_inst universe context depth name args =
     match Universe.find universe name with
     | `Axiom a -> 
-        instantiate (Axiom.get_context a) (Axiom.get_proposition a) args
+        instantiate universe context depth (Axiom.get_context a) args (Axiom.get_proposition a)
     | `Theorem t -> 
-        instantiate (Theorem.get_context t) (Theorem.get_proposition t) args
+        instantiate universe context depth (Theorem.get_context t) args (Theorem.get_proposition t)
     | `Definition d -> Definition.instantiate d args
     | `Not_found -> Result.fail (sprintf "unknown symbol %s" name)
-  in
 
-  let rule_axiom_or_weak () =
+and rule_axiom_or_weak universe context term depth =
     match context with
     (* axiom, requires empty context. *)
-    | [] -> Ok Box
+    | [] -> Ok Term.Box
     (* context not empty. try weakening. *)
     | (_, _A) :: ctx' ->
         (* type check _A before discarding x: _A from ctx.
             try again with stronger context ctx'. *)
         infer_type universe ctx' _A (depth + 1) >>= fun _ ->
         infer_type universe ctx' term (depth + 1)
-  in
 
-  let rule_var_or_weak x =
+and rule_var_or_weak universe context term depth x =
     match context with
     (* cannot derive type_of x in empty ctx *)
     | [] -> Result.fail (String.concat [ "free var "; x; " not in context" ])
@@ -149,21 +135,6 @@ and infer_type (universe : Universe.t) (context : Context.t) (term : Term.t) (de
           (* if x1 != x, then we perform weakening by discarding x1 : _A
               from the context. We already checked that _A is well-formed *)
         else infer_type universe ctx' term (depth + 1) 
-  in
-  
-  (* _debug ctx term depth; *)
-  match term with
-  | Star -> rule_axiom_or_weak ()
-  | Free x -> rule_var_or_weak x
-  | Pi (a, b) -> rule_form a b
-  | App (m, n) -> rule_app m n
-  | Lambda (a, b) -> rule_abs a b
-  | Inst (name, args) -> rule_inst name args
-  | Box -> Error ("Box is not typeable at level (" ^ (Int.to_string depth) ^ ")")
-  | Bound i ->
-      Error
-        (String.concat
-           [ "bound variable "; Int.to_string i; " outside abstraction" ])
 
 let infer (universe : Universe.t) (context : Context.t) (term : Term.t) =
   infer_type universe context term 0
