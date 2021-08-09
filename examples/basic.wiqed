@@ -3,7 +3,7 @@ Definition
 Done
 
 Theorem
-    Name(x1: a1) : a2
+    Name(a1: *, x2: a1) : a1
 Proof
     x2
 Qed

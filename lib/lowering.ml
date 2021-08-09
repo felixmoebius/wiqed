@@ -15,16 +15,16 @@ let lower_expression (e : Syntax.expression) : Term.t =
 
 let lower_theorem (t : Syntax.theorem) =
   let context : Context.t =
-    List.map t.parameter_list ~f:(fun (name, exp) ->
-        (name, lower_expression exp))
+    List.rev (List.map t.parameter_list ~f:(fun (name, exp) ->
+        (name, lower_expression exp)))
   and proof = lower_expression t.proof
   and proposition = lower_expression t.proposition in
   Ast.Theorem (Theorem.make ~context ~proposition ~proof)
 
 let lower_axiom (a : Syntax.axiom) =
   let context : Context.t =
-    List.map a.parameter_list ~f:(fun (name, exp) ->
-        (name, lower_expression exp))
+    List.rev (List.map a.parameter_list ~f:(fun (name, exp) ->
+        (name, lower_expression exp)))
   and proposition = lower_expression a.proposition in
   Ast.Axiom (Axiom.make ~context ~proposition)
 

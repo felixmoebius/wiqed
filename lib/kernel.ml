@@ -28,6 +28,7 @@ let rec check_type (universe : Universe.t) (context : Context.t) (term : Term.t)
 
 and infer_type (universe : Universe.t) (context : Context.t) (term : Term.t) (depth : int) =
   let open Term in
+  (* _debug context term depth; *)
 
   let rule_form a b =
     (* ensure a is well-typed *)
@@ -97,7 +98,6 @@ and infer_type (universe : Universe.t) (context : Context.t) (term : Term.t) (de
   in *)
 
   let instantiate ctx typ args =
-
     let%bind () = check_arg_lengths args ctx in
 
     let lx, la = List.unzip ctx in

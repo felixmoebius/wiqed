@@ -102,6 +102,18 @@ let%expect_test _ =
     Proof
       (((Pi a . (1 (lambda b . (0 1)))) x) y)
     Qed |}];
+  test {|
+    Theorem
+      Name(a1: *, x1: a1) : a1
+    Proof
+      x1
+    Qed |};
+  [%expect {|
+    Theorem
+      Name(a1: *, x1: a1) : a1
+    Proof
+      x1
+    Qed |}];
 
 
 
