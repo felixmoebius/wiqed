@@ -5,7 +5,7 @@ let check_file file =
   let input = Input.from_file file in
   match Machine.verify input with
   | Error e -> print_endline e
-  | Ok () -> print_endline "success"
+  | Ok _ -> print_endline "success"
 
 
 let command =

@@ -30,7 +30,13 @@ type axiom = {
   proposition : expression;
 }
 
-type toplevel = Theorem of theorem | Axiom of axiom
+type definition = {
+  name : string;
+  parameter_list : string list;
+  term : expression;
+}
+
+type toplevel = Theorem of theorem | Axiom of axiom | Definition of definition
 
 type prog = toplevel list
 
@@ -58,6 +64,11 @@ and pp_parameter_list pl =
       if String.is_empty acc then pp_parameter p
       else sprintf "%s, %s" acc (pp_parameter p))
 
+and pp_untyped_parameter_list pl =
+  List.fold pl ~init:"" ~f:(fun acc p ->
+      if String.is_empty acc then p
+      else sprintf "%s, %s" acc p)
+
 and pp_theorem (t : theorem) =
   sprintf "Theorem\n  %s(%s) : %s\nProof\n  %s\nQed" t.name
     (pp_parameter_list t.parameter_list)
@@ -69,7 +80,15 @@ and pp_axiom (a : axiom) =
     (pp_parameter_list a.parameter_list)
     (pp_expression a.proposition)
 
-and pp_toplevel = function Theorem t -> pp_theorem t | Axiom a -> pp_axiom a
+and pp_definition (d : definition) =
+  sprintf "Definition\n  %s(%s) := %s\nDone" d.name
+    (pp_untyped_parameter_list d.parameter_list)
+    (pp_expression d.term)
+
+and pp_toplevel = function 
+  | Theorem t -> pp_theorem t 
+  | Axiom a -> pp_axiom a
+  | Definition d -> pp_definition d
 
 and pp_prog p =
   List.fold p ~init:"" ~f:(fun acc x ->

@@ -13,6 +13,8 @@
 %token BOX
 %token AXIOM
 %token THEOREM
+%token DEFINITION
+%token AS
 %token PROOF
 %token QED
 %token DONE
@@ -22,15 +24,16 @@
 
 %%
 
-prog: l = list(theorem_or_axiom); EOF { l } ;
+prog: l = list(toplevel); EOF { l } ;
 
-theorem_or_axiom:
-  | t = theorem { t }
-  | a = axiom   { a }
+toplevel:
+  | t = theorem    { t }
+  | a = axiom      { a }
+  | d = definition { d }
   ;
 
 theorem:
-  | THEOREM; n = GLOBAL; LPAREN; p = parameter_list; RPAREN; COLON; e1 = expression; PROOF; e2 = expression; QED
+  | THEOREM; n = GLOBAL; LPAREN; p = typed_parameter_list; RPAREN; COLON; e1 = expression; PROOF; e2 = expression; QED
     { let t: Syntax.theorem = {
       name = n;
       parameter_list = p;
@@ -40,8 +43,7 @@ theorem:
   ;
 
 axiom:
-  | AXIOM; n = GLOBAL; LPAREN; p = parameter_list; RPAREN; COLON; 
-    e1 = expression; DONE
+  | AXIOM; n = GLOBAL; LPAREN; p = typed_parameter_list; RPAREN; COLON; e1 = expression; DONE
     { let a: Syntax.axiom = {
       name = n;
       parameter_list = p;
@@ -49,10 +51,26 @@ axiom:
     } in Syntax.Axiom (a) }
   ;
 
-parameter_list: 
-  p = separated_list(COMMA, parameter) { p } ;
+definition:
+  | DEFINITION; n = GLOBAL; LPAREN; p = untyped_parameter_list; RPAREN; AS; e = expression; DONE
+    { let d: Syntax.definition = {
+      name = n;
+      parameter_list = p;
+      term = e;
+    } in Syntax.Definition (d) }
+  ;
 
-parameter: n = FREE; COLON; e = expression { (n, e) };
+typed_parameter_list: 
+  p = separated_list(COMMA, typed_parameter) { p } ;
+
+typed_parameter:
+  n = FREE; COLON; e = expression { (n, e) };
+
+untyped_parameter_list: 
+  p = separated_list(COMMA, untyped_parameter) { p } ;
+
+untyped_parameter:
+  n = FREE { n };
 
 expression:
   | LAMBDA; e1 = expression; DOT; e2 = expression
@@ -65,7 +83,8 @@ expression:
     { Syntax.Instance (n, a) }
   ;
 
-argument_list: args = separated_list(COMMA, expression) { args } ;
+argument_list: 
+  args = separated_list(COMMA, expression) { args } ;
 
 application:
   | e = simple 

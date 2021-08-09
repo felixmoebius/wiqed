@@ -1,21 +1,31 @@
 prog =
-    | list(theorem_or_axiom)
+    | list(toplevel)
 
-theorem_or_axiom =
+toplevel =
     | theorem
     | axiom
+    | definition
 
 theorem =
-    | THEOREM a LPAREN parameter_list RPAREN COLON expression PROOF expression QED
+    | THEOREM GLOBAL LPAREN typed_parameter_list RPAREN COLON expression PROOF expression QED
 
 axiom =
-    | AXIOM a LPAREN parameter_list RPAREN COLON expression DONE
+    | AXIOM GLOBAL LPAREN typed_parameter_list RPAREN COLON expression DONE
 
-parameter_list =
-    | separated_list(COMMA, parameter)
+definition =
+    | DEFINITION GLOBAL LPAREN
 
-parameter =
+typed_parameter_list =
+    | separated_list(COMMA, typed_parameter)
+
+typed_parameter =
     | FREE COLON expression
+
+untyped_parameter_list =
+    | separated_list(COMMA, untyped_parameter)
+
+untyped_parameter =
+    | expression
 
 expression =
     | instantiation

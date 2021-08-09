@@ -1,13 +1,9 @@
+Definition
+    And(a, b) := a
+Done
+
 Theorem
     Name(x1: a1) : a2
 Proof
     x2
 Qed
-
-
-
-Define
-    _name(x1)
-As
-    x1
-End

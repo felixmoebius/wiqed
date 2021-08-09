@@ -13,23 +13,27 @@ let lower_expression (e : Syntax.expression) : Term.t =
   in
   lower e
 
-let lower_theorem (t : Syntax.theorem) : string * Fact.t =
+let lower_theorem (t : Syntax.theorem) =
   let context : Context.t =
     List.map t.parameter_list ~f:(fun (name, exp) ->
         (name, lower_expression exp))
-  and term = lower_expression t.proof
-  and typ = lower_expression t.proposition in
-  (t.name, Fact.make_theorem ~context ~term ~typ)
+  and proof = lower_expression t.proof
+  and proposition = lower_expression t.proposition in
+  Ast.Theorem (Theorem.make ~context ~proposition ~proof)
 
-let lower_axiom (a : Syntax.axiom) : string * Fact.t =
+let lower_axiom (a : Syntax.axiom) =
   let context : Context.t =
     List.map a.parameter_list ~f:(fun (name, exp) ->
         (name, lower_expression exp))
-  and typ = lower_expression a.proposition in
-  (a.name, Fact.make_axiom ~context ~typ)
+  and proposition = lower_expression a.proposition in
+  Ast.Axiom (Axiom.make ~context ~proposition)
+
+let lower_definition (d : Syntax.definition) =
+  Ast.Definition (lower_expression d.term, d.parameter_list)
 
 let lower_toplevel = function
-  | Syntax.Theorem t -> lower_theorem t
-  | Syntax.Axiom a -> lower_axiom a
+  | Syntax.Theorem t -> (t.name, lower_theorem t)
+  | Syntax.Axiom a -> (a.name, lower_axiom a)
+  | Syntax.Definition d -> (d.name, lower_definition d)
 
-let lower (prog : Syntax.prog) = List.map prog ~f:lower_toplevel
+let lower (prog : Syntax.prog) = List.map prog ~f: lower_toplevel

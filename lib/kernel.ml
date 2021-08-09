@@ -1,4 +1,5 @@
 open Base
+open Core
 open Result.Let_syntax
 
 
@@ -74,16 +75,13 @@ and infer_type (universe : Universe.t) (context : Context.t) (term : Term.t) (de
     Result.return t
   in
 
-  let rule_inst name arguments =
-    (* lookup theorem or axiom *)
-    let%bind def = Universe.find_fact universe name in
+  (* let rule_inst_fact fact arguments =
+    let ctx = Fact.get_context fact
+    and typ = Fact.get_type fact in
 
-    let parameters = Fact.get_context def
-    and typ = Fact.get_type def in
+    let%bind () = check_arg_lengths arguments ctx in
 
-    let%bind () = check_arg_lengths arguments parameters in
-
-    let lx, la = List.unzip parameters in
+    let lx, la = List.unzip ctx in
     let xu = List.zip_exn lx arguments in
 
     (* substitute A[U/X] *)
@@ -96,6 +94,35 @@ and infer_type (universe : Universe.t) (context : Context.t) (term : Term.t) (de
 
     (* return n[U/X] *)
     Result.return (Term.subst_all xu typ)
+  in *)
+
+  let instantiate ctx typ args =
+
+    let%bind () = check_arg_lengths args ctx in
+
+    let lx, la = List.unzip ctx in
+    let xu = List.zip_exn lx args in
+
+    (* substitute A[U/X] *)
+    let f i a = Term.subst_range i xu a in
+    let ls = List.mapi la ~f in
+
+    (* check U : S *)
+    let f (u, s) = check_type universe context u s (depth + 1) in
+    let%bind () = Utils.first_err (List.zip_exn args ls) ~f in
+
+    (* return n[U/X] *)
+    Result.return (Term.subst_all xu typ)
+  in
+
+  let rule_inst name args =
+    match Universe.find universe name with
+    | `Axiom a -> 
+        instantiate (Axiom.get_context a) (Axiom.get_proposition a) args
+    | `Theorem t -> 
+        instantiate (Theorem.get_context t) (Theorem.get_proposition t) args
+    | `Definition d -> Definition.instantiate d args
+    | `Not_found -> Result.fail (sprintf "unknown symbol %s" name)
   in
 
   let rule_axiom_or_weak () =
@@ -143,11 +170,6 @@ let infer (universe : Universe.t) (context : Context.t) (term : Term.t) =
 
 let check (universe : Universe.t) (context : Context.t) (term : Term.t) (typ : Term.t) =
   check_type universe context term typ 0
-
-(* let type_of ctx exp = type_of' [] ctx exp 0 *)
-
-(* let check_bool ctx exp typ =
-  (function Error _ -> false | Ok t -> Term.beta_eq typ t) (type_of ctx exp) *)
 
 let infer_normalized (universe : Universe.t) (context : Context.t) (term : Term.t) =
   Result.map (infer universe context term) ~f: Term.normalize
