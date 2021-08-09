@@ -23,7 +23,9 @@ rule read =
   | white     { read lexbuf }
   | newline   { next_line lexbuf; read lexbuf }
   | "lambda"  { LAMBDA }
+  | '\\'      { LAMBDA }
   | "pi"      { PI }
+  | "forall"  { PI }
   | "Theorem" { THEOREM }
   | "Axiom"   { AXIOM }
   | "Definition"  { DEFINITION }
