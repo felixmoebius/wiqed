@@ -86,7 +86,10 @@ and rule_abs universe context depth a b =
     let%bind _ = infer_type universe context t (depth + 1) in
     Result.return t
 
-and instantiate universe context depth params args typ =
+and rule_inst universe context depth name args =
+    let%bind def = Universe.find universe name in
+    let params = Definition.get_context def
+    and typ = Definition.get_proposition def in
     let%bind () = check_arg_lengths args params in
 
     let lx, la = List.unzip params in
@@ -102,15 +105,6 @@ and instantiate universe context depth params args typ =
 
     (* return n[U/X] *)
     Result.return (Term.subst_all xu typ)
-
-and rule_inst universe context depth name args =
-    match Universe.find universe name with
-    | `Axiom a -> 
-        instantiate universe context depth (Axiom.get_context a) args (Axiom.get_proposition a)
-    | `Theorem t -> 
-        instantiate universe context depth (Theorem.get_context t) args (Theorem.get_proposition t)
-    | `Definition d -> Definition.instantiate d args
-    | `Not_found -> Result.fail (sprintf "unknown symbol %s" name)
 
 and rule_axiom_or_weak universe context term depth =
     match context with

@@ -28,8 +28,6 @@ rule read =
   | "forall"  { PI }
   | "Theorem" { THEOREM }
   | "Axiom"   { AXIOM }
-  | "Definition"  { DEFINITION }
-  | ":="      { AS }
   | "Proof"   { PROOF }
   | "Qed"     { QED }
   | "Done"    { DONE }

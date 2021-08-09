@@ -13,8 +13,6 @@
 %token BOX
 %token AXIOM
 %token THEOREM
-%token DEFINITION
-%token AS
 %token PROOF
 %token QED
 %token DONE
@@ -29,7 +27,6 @@ prog: l = list(toplevel); EOF { l } ;
 toplevel:
   | t = theorem    { t }
   | a = axiom      { a }
-  | d = definition { d }
   ;
 
 theorem:
@@ -51,26 +48,11 @@ axiom:
     } in Syntax.Axiom (a) }
   ;
 
-definition:
-  | DEFINITION; n = GLOBAL; LPAREN; p = untyped_parameter_list; RPAREN; AS; e = expression; DONE
-    { let d: Syntax.definition = {
-      name = n;
-      parameter_list = p;
-      term = e;
-    } in Syntax.Definition (d) }
-  ;
-
 typed_parameter_list: 
   p = separated_list(COMMA, typed_parameter) { p } ;
 
 typed_parameter:
   n = FREE; COLON; e = expression { (n, e) };
-
-untyped_parameter_list: 
-  p = separated_list(COMMA, untyped_parameter) { p } ;
-
-untyped_parameter:
-  n = FREE { n };
 
 expression:
   | LAMBDA; e1 = expression; DOT; e2 = expression

@@ -1,24 +1,8 @@
-Definition
-    Xyz(a, b) := a
-Done
-
 Theorem
     Name(a1: *, x2: a1) : a1
 Proof
     x2
 Qed
-
-Definition
-    And(a, b) := forall *. (pi (pi a. (pi b. 0)). 0)
-Done
-
-Definition
-    Falsum2() := pi *. 0
-Done
-
-Definition
-    Not2(a) := pi a. Falsum()
-Done
 
 Theorem
     Falsum() : *
