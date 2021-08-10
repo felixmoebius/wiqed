@@ -64,13 +64,13 @@ and pp_untyped_parameter_list pl =
       else sprintf "%s, %s" acc p)
 
 and pp_theorem (t : theorem) =
-  sprintf "Theorem\n  %s(%s) : %s\nProof\n  %s\nQed" t.name
+  sprintf "Definition\n  %s(%s) := %s : %s\nEnd" t.name
     (pp_parameter_list t.parameter_list)
-    (pp_expression t.proposition)
     (pp_expression t.proof)
+    (pp_expression t.proposition)
 
 and pp_axiom (a : axiom) =
-  sprintf "Axiom\n  %s(%s) : %s\nDone" a.name
+  sprintf "Definition\n  %s(%s) : %s\nEnd" a.name
     (pp_parameter_list a.parameter_list)
     (pp_expression a.proposition)
 

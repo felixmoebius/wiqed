@@ -18,102 +18,82 @@ let%expect_test _ =
   test " \t \n"; [%expect {| |}];
 
   test {|
-    Axiom
+    Definition
       Name(x1: a1) : a2
-    Done |};
+    End |};
   [%expect {|
-    Axiom
+    Definition
       Name(x1: a1) : a2
-    Done |}];
+    End
+     |}];
 
   test {|
-    Theorem
-      Name(x1: a1) : a2
-    Proof
-      x2
-    Qed |};
+    Definition
+      Name(x1: a1) := x2 : a2
+    End |};
   [%expect {|
-    Theorem
-      Name(x1: a1) : a2
-    Proof
-      x2
-    Qed |}];
+    Definition
+      Name(x1: a1) := x2 : a2
+    End
+     |}];
 
   test {|
-    Theorem
-      Name1(x1: a1) : a2
-    Proof
-      x2
-    Qed 
+    Definition
+      Name1(x1: a1) := x2 : a2
+    End 
     
-    Theorem
-      Name2(x1: a1) : a2
-    Proof
-      x2
-    Qed |};
+    Definition
+      Name2(x1: a1) := x2 : a2
+    End |};
   [%expect {|
-    Theorem
-      Name1(x1: a1) : a2
-    Proof
-      x2
-    Qed
+    Definition
+      Name1(x1: a1) := x2 : a2
+    End
 
-    Theorem
-      Name2(x1: a1) : a2
-    Proof
-      x2
-    Qed |}];
+    Definition
+      Name2(x1: a1) := x2 : a2
+    End
+     |}];
 
   test {|
-    Theorem
-      Name(x1: a1) : a2
-    Proof
-      lambda a. x
-    Qed |};
+    Definition
+      Name(x1: a1) := lambda a. x : a2
+    End |};
   [%expect {|
-    Theorem
-      Name(x1: a1) : a2
-    Proof
-      (lambda a . x)
-    Qed |}];
+    Definition
+      Name(x1: a1) := (lambda a . x) : a2
+    End
+     |}];
 
   test {|
-    Theorem
-      Name(x1: a1) : a2
-    Proof
-      lambda a. 1 0
-    Qed |};
+    Definition
+      Name(x1: a1) := lambda a. 1 0 : a2
+    End |};
   [%expect {|
-    Theorem
-      Name(x1: a1) : a2
-    Proof
-      (lambda a . (1 0))
-    Qed |}];
+    Definition
+      Name(x1: a1) := (lambda a . (1 0)) : a2
+    End
+    |}];
 
   test {|
-    Theorem
-      Name(x1: a1) : a2
-    Proof
-      (pi a. 1 (lambda b. 0 1)) x y
-    Qed |};
+    Definition
+      Name(x1: a1) := (pi a. 1 (lambda b. 0 1)) x y : a2
+    End |};
   [%expect {|
-    Theorem
-      Name(x1: a1) : a2
-    Proof
-      (((Pi a . (1 (lambda b . (0 1)))) x) y)
-    Qed |}];
+    Definition
+      Name(x1: a1) := (((Pi a . (1 (lambda b . (0 1)))) x) y) : a2
+    End
+    |}];
+
   test {|
-    Theorem
-      Name(a1: *, x1: a1) : a1
-    Proof
-      x1
-    Qed |};
+    Definition
+      Name(a1: *, x1: a1) := x1 : a1
+    End |};
   [%expect {|
-    Theorem
-      Name(a1: *, x1: a1) : a1
-    Proof
-      x1
-    Qed |}];
+    Definition
+      Name(a1: *, x1: a1) := x1 : a1
+    End
+     |}];
 
 
 
