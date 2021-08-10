@@ -1,3 +1,7 @@
+# Wiqed
+
+![CI](https://github.com/felixmoebius/wiqed/actions/workflows/workflow.yml/badge.svg)
+
 ## Overview
 
 Wiqed is a barebones theorem prover based on the calculus of constructions with support for definitions as presented in [Type Theory and Formal Proof](https://www.cambridge.org/core/books/type-theory-and-formal-proof/0472640AAD34E045C7F140B46A57A67C).
