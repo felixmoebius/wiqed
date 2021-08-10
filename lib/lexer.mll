@@ -26,11 +26,9 @@ rule read =
   | '\\'      { LAMBDA }
   | "pi"      { PI }
   | "forall"  { PI }
-  | "Theorem" { THEOREM }
-  | "Axiom"   { AXIOM }
-  | "Proof"   { PROOF }
-  | "Qed"     { QED }
-  | "Done"    { DONE }
+  | "Definition" { DEFINITION }
+  | ":="      { AS }
+  | "End"     { END }
   | '.'       { DOT }
   | '('       { LPAREN }
   | ')'       { RPAREN }

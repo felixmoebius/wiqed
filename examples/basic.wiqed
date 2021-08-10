@@ -1,48 +1,40 @@
-Theorem
-    Name(a1: *, x2: a1) : a1
-Proof
-    x2
-Qed
+Definition
+    Simple(a1: *, x2: a1) := x2 : a1
+End
 
-Theorem
-    Falsum() : *
-Proof
-    pi *. 0
-Qed
+Definition
+    Simple_application(a: *, b: *, x: a, f: pi a. b) := f x : b
+End
 
-Theorem
-    Not(a: *) : *
-Proof
-    pi a. Falsum()
-Qed
+Definition
+    Falsum() := pi *. 0 : *
+End
 
-Theorem
-    Test1(a: *) : *
-Proof
-    Not(a)
-Qed
+Definition
+    Not(a: *) := pi a. Falsum() : *
+End
 
-Theorem
-    And(a: *, b: *) : *
-Proof
-    pi *. pi (pi a. pi b. 2). 1
-Qed
+Definition
+    Not_a_is_type(a: *) := Not(a) : *
+End
 
-Theorem
-    Imp(a: *, b: *) : *
-Proof
-    pi a. b
-Qed
+Definition
+    And(a: *, b: *) := pi *. pi (pi a. pi b. 2). 1 : *
+End
 
-Theorem
-    Taut1(s: *, p: pi s. *) : pi s. (pi (p 0). (p 1))
-Proof
-    \s. (\(p 0). 0)
-Qed
+Definition
+    Imp(a: *, b: *) := pi a. b : *
+End
 
-Theorem
-    Taut2(s: *, p: pi s. *) : pi s. (Imp(p 0, p 0))
-Proof
-    \s. (\(p 0). 0)
-Qed
+Definition
+    Complex(s: *, p: pi s. *) := \s. (\(p 0). 0) : pi s. (pi (p 0). (p 1))
+End
+
+Definition
+    Complex_with_definition(s: *, p: pi s. *) := \s. (\(p 0). 0) : pi s. (Imp(p 0, p 0))
+End
+
+Definition
+    Nat() : *
+End
 

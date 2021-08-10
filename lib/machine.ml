@@ -17,8 +17,11 @@ let verify (input : Input.t) =
     match tl with
     | [] -> Result.return universe
     | t :: tl' -> 
-      printf "checking %s\n" (fst t);
-      let%bind u = add_definition universe (fst t) (snd t) in
+      printf "checking %s" (fst t);
+      let%bind u = match add_definition universe (fst t) (snd t) with
+      | Ok x -> printf "...ok\n"; Result.return x
+      | Error e -> printf "...error\n"; Result.fail e
+      in
       loop tl' u
   in
   loop ast Universe.empty

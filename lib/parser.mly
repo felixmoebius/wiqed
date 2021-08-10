@@ -11,11 +11,9 @@
 %token EOF
 %token STAR
 %token BOX
-%token AXIOM
-%token THEOREM
-%token PROOF
-%token QED
-%token DONE
+%token DEFINITION
+%token END
+%token AS
 
 
 %start <Syntax.prog> prog
@@ -30,17 +28,17 @@ toplevel:
   ;
 
 theorem:
-  | THEOREM; n = GLOBAL; LPAREN; p = typed_parameter_list; RPAREN; COLON; e1 = expression; PROOF; e2 = expression; QED
+  | DEFINITION; n = GLOBAL; LPAREN; p = typed_parameter_list; RPAREN; AS; e1 = expression; COLON; e2 = expression; END
     { let t: Syntax.theorem = {
       name = n;
       parameter_list = p;
-      proposition = e1;
-      proof = e2
+      proposition = e2;
+      proof = e1
     } in Syntax.Theorem (t) }
   ;
 
 axiom:
-  | AXIOM; n = GLOBAL; LPAREN; p = typed_parameter_list; RPAREN; COLON; e1 = expression; DONE
+  | DEFINITION; n = GLOBAL; LPAREN; p = typed_parameter_list; RPAREN; COLON; e1 = expression; END
     { let a: Syntax.axiom = {
       name = n;
       parameter_list = p;
