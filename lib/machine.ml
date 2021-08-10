@@ -11,7 +11,7 @@ let add_definition universe key definition =
   Result.return (Universe.add universe key definition)
 
 let verify (input : Input.t) =
-  let%bind prog = Astgen.parse input.lexbuf in
+  let%bind prog = Frontend.parse input.lexbuf in
   let ast = Lowering.lower prog in
   let rec loop tl universe =
     match tl with

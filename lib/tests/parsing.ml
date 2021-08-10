@@ -3,7 +3,7 @@ open Stdio
 
 let parse_and_stringify s =
   let lexbuf = Lexing.from_string s in
-  match Astgen.parse lexbuf with
+  match Frontend.parse lexbuf with
   | Ok prog -> Syntax.pp_prog prog
   | Error e -> e
 
