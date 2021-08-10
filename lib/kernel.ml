@@ -2,6 +2,66 @@ open Base
 open Core
 open Result.Let_syntax
 
+let unfold context term args =
+  let names = fst (List.unzip context) in
+  let names_args = List.zip_exn names args in
+  Term.subst_all names_args term
+
+let rec normalize universe term =
+  let open Term in
+  match term with
+  (* terminal *)
+  | Box | Star | Free _ | Bound _ -> term
+  (* normalize descendents *)
+  | Lambda (typ, e) -> Lambda (normalize universe typ, normalize universe e)
+  | Pi (typ, e) -> Pi (normalize universe typ, normalize universe e)
+  (* beta reduction *)
+  | App (f, x) -> (
+      match normalize universe f with
+      (* apply if we can... *)
+      | Lambda (_, e) -> normalize universe (open0 e x)
+      (* ...otherwise just return components *)
+      | f' -> App (f', normalize universe x) )
+  | Inst (name, args) ->
+      (match Universe.find universe name with
+      | Ok (Definition.Axiom _) -> Inst (name, List.map args ~f: (normalize universe))
+      | Ok (Definition.Theorem (c, p, _)) -> normalize universe (unfold c p args)
+      | Error e -> raise (Failure e)
+      )
+
+(* check for term equality by testing for alpha-conversion.
+the locally-nameless approach makes this very easy, because
+we only need to recursively check the structure of the terms
+and ensure that free variable names and bound variable de Bruijn
+indices match *)
+let rec alpha_eq e1 e2 =
+  let open Term in
+  match (e1, e2) with
+  (* terminal *)
+  | Star, Star | Box, Box -> true
+  (* matching de Bruijn indices *)
+  | Bound i1, Bound i2 -> equal_int i1 i2
+  (* matching free variable names *)
+  | Free x1, Free x2 -> equal_string x1 x2
+  (* equal iff descendents are equal *)
+  | Lambda (l1, r1), Lambda (l2, r2)
+  | Pi (l1, r1), Pi (l2, r2)
+  | App (l1, r1), App (l2, r2) ->
+      alpha_eq l1 l2 && alpha_eq r1 r2
+  (* definition name matches and all args are equal *)
+  | Inst (n1, a1), Inst (n2, a2) -> (
+      List.(
+        equal_string n1 n2
+        &&
+        match zip a1 a2 with
+        | Unequal_lengths -> false
+        | Ok z -> for_all z ~f:(fun (x1, x2) -> alpha_eq x1 x2)) )
+  (* unequal in all other cases *)
+  | _ -> false
+
+(* check for beta-equality by checking the normalized term
+for alpha-convertibility *)
+let equal universe e1 e2 = alpha_eq (normalize universe e1) (normalize universe e2)
 
 let check_arg_lengths (lu : Term.t list) lxa =
   let error = "arg length mismatch" in
@@ -24,7 +84,7 @@ let _debug ctx exp d =
 let rec check_type (universe : Universe.t) (context : Context.t) (term : Term.t) (typ : Term.t) (depth : int) =
   let%bind t = infer_type universe context term depth in
   let error = sprintf "expected %s\nbut infered type is %s" (Term.string_of_exp typ) (Term.string_of_exp t) in
-  Term.beta_eq t typ |> Result.ok_if_true ~error
+  equal universe t typ |> Result.ok_if_true ~error
 
 and infer_type (universe : Universe.t) (context : Context.t) (term : Term.t) (depth : int) =
   let open Term in
@@ -137,4 +197,4 @@ let check (universe : Universe.t) (context : Context.t) (term : Term.t) (typ : T
   check_type universe context term typ 0
 
 let infer_normalized (universe : Universe.t) (context : Context.t) (term : Term.t) =
-  Result.map (infer universe context term) ~f: Term.normalize
+  Result.map (infer universe context term) ~f: (normalize universe)

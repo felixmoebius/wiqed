@@ -69,23 +69,6 @@ a 'dangling' de Bruijn index that gets bound when we put the
 result into an abstraction *)
 let close0 t x = _close t 0 x
 
-(* normalize well-typed term *)
-let rec normalize exp =
-  match exp with
-  (* terminal *)
-  | Box | Star | Free _ | Bound _ -> exp
-  (* normalize descendents *)
-  | Lambda (typ, e) -> Lambda (normalize typ, normalize e)
-  | Pi (typ, e) -> Pi (normalize typ, normalize e)
-  (* beta reduction *)
-  | App (f, x) -> (
-      match normalize f with
-      (* apply if we can... *)
-      | Lambda (_, e) -> normalize (open0 e x)
-      (* ...otherwise just return components *)
-      | f' -> App (f', normalize x) )
-  | Inst _ -> raise (Failure "unfold unimplemented")
-
 (* substitute free variable z in e with u *)
 let rec subst e z u =
   match e with
@@ -105,35 +88,3 @@ let subst_all (xu : (string * t) list) (a : t) =
 
 let subst_range i xu a = subst_all (List.take xu i) a
 
-(* check for term equality by testing for alpha-conversion.
-the locally-nameless approach makes this very easy, because
-we only need to recursively check the structure of the terms
-and ensure that free variable names and bound variable de Bruijn
-indices match *)
-let rec alpha_eq e1 e2 =
-  match (e1, e2) with
-  (* terminal *)
-  | Star, Star | Box, Box -> true
-  (* matching de Bruijn indices *)
-  | Bound i1, Bound i2 -> equal_int i1 i2
-  (* matching free variable names *)
-  | Free x1, Free x2 -> equal_string x1 x2
-  (* equal iff descendents are equal *)
-  | Lambda (l1, r1), Lambda (l2, r2)
-  | Pi (l1, r1), Pi (l2, r2)
-  | App (l1, r1), App (l2, r2) ->
-      alpha_eq l1 l2 && alpha_eq r1 r2
-  (* definition name matches and all args are equal *)
-  | Inst (n1, a1), Inst (n2, a2) -> (
-      List.(
-        equal_string n1 n2
-        &&
-        match zip a1 a2 with
-        | Unequal_lengths -> false
-        | Ok z -> for_all z ~f:(fun (x1, x2) -> alpha_eq x1 x2)) )
-  (* unequal in all other cases *)
-  | _ -> false
-
-(* check for beta-equality by checking the normalized term
-for alpha-convertibility *)
-let beta_eq e1 e2 = alpha_eq (normalize e1) (normalize e2)
