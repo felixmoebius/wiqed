@@ -1,0 +1,3 @@
+Definition
+    Apply_f_to_x(a: *, b: *, x: a, f: pi a. b) := f x : b
+End
