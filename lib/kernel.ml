@@ -61,7 +61,7 @@ let rec alpha_eq e1 e2 =
 
 (* check for beta-equality by checking the normalized term
 for alpha-convertibility *)
-let equal universe e1 e2 = alpha_eq (normalize universe e1) (normalize universe e2)
+(* let equal universe e1 e2 = alpha_eq (normalize universe e1) (normalize universe e2) *)
 
 let check_arg_lengths (lu : Term.t list) lxa =
   let error = "arg length mismatch" in
@@ -82,9 +82,10 @@ let _debug ctx exp d =
        ])
 
 let rec check_type (universe : Universe.t) (context : Context.t) (term : Term.t) (typ : Term.t) (depth : int) =
-  let%bind t = infer_type universe context term depth in
-  let error = sprintf "expected %s\nbut infered type is %s" (Term.string_of_exp typ) (Term.string_of_exp t) in
-  equal universe t typ |> Result.ok_if_true ~error
+  let%bind t = Result.map (infer_type universe context term depth) ~f: (normalize universe) in
+  let typ' = normalize universe typ in
+  let error = sprintf "expected %s\nbut infered type is %s" (Term.string_of_exp typ') (Term.string_of_exp t) in
+  alpha_eq t typ' |> Result.ok_if_true ~error
 
 and infer_type (universe : Universe.t) (context : Context.t) (term : Term.t) (depth : int) =
   let open Term in

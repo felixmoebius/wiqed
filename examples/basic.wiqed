@@ -21,3 +21,28 @@ Theorem
 Proof
     Not(a)
 Qed
+
+Theorem
+    And(a: *, b: *) : *
+Proof
+    pi *. pi (pi a. pi b. 2). 1
+Qed
+
+Theorem
+    Imp(a: *, b: *) : *
+Proof
+    pi a. b
+Qed
+
+Theorem
+    Taut1(s: *, p: pi s. *) : pi s. (pi (p 0). (p 1))
+Proof
+    \s. (\(p 0). 0)
+Qed
+
+Theorem
+    Taut2(s: *, p: pi s. *) : pi s. (Imp(p 0, p 0))
+Proof
+    \s. (\(p 0). 0)
+Qed
+
