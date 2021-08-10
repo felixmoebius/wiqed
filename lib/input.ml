@@ -1,9 +1,6 @@
 open Core
 
-type t = {
-  filename : string;
-  lexbuf : Lexing.lexbuf;
-}
+type t = { filename : string; lexbuf : Lexing.lexbuf }
 
 let from_string s =
   let filename = "string" in

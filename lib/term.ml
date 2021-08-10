@@ -24,10 +24,9 @@ let rec string_of_exp exp =
   | Inst (n, args) -> Core.sprintf "%s(%s)" n (string_of_exp_list args)
 
 and string_of_exp_list l =
-  List.fold l ~init:"" ~f: (fun acc e ->
-    let s = string_of_exp e in
-    if String.is_empty acc then s
-    else Core.sprintf "%s, %s" acc s)
+  List.fold l ~init:"" ~f:(fun acc e ->
+      let s = string_of_exp e in
+      if String.is_empty acc then s else Core.sprintf "%s, %s" acc s)
 
 (* replace all bound variables in t at de Bruijn index k 
 with the term u *)
@@ -76,12 +75,14 @@ result into an abstraction *)
 let close0 t x = _close t 0 x
 
 let rec bump = function
-  | Box -> Box | Star -> Star | Free x -> Free x
+  | Box -> Box
+  | Star -> Star
+  | Free x -> Free x
   | App (t1, t2) -> App (bump t1, bump t2)
   | Lambda (t1, t2) -> Lambda (bump t1, bump t2)
   | Pi (t1, t2) -> Pi (bump t1, bump t2)
-  | Inst (n, a) -> Inst (n, List.map a ~f: bump)
-  | Bound i -> Bound (i+1)
+  | Inst (n, a) -> Inst (n, List.map a ~f:bump)
+  | Bound i -> Bound (i + 1)
 
 (* substitute free variable z in e with u *)
 let rec subst e z u =
@@ -101,4 +102,3 @@ let subst_all (xu : (string * t) list) (a : t) =
   List.fold xu ~init:a ~f:(fun a' (x, u) -> subst a' x u)
 
 let subst_range i xu a = subst_all (List.take xu i) a
-

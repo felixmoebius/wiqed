@@ -60,8 +60,7 @@ and pp_parameter_list pl =
 
 and pp_untyped_parameter_list pl =
   List.fold pl ~init:"" ~f:(fun acc p ->
-      if String.is_empty acc then p
-      else sprintf "%s, %s" acc p)
+      if String.is_empty acc then p else sprintf "%s, %s" acc p)
 
 and pp_theorem (t : theorem) =
   sprintf "Definition\n  %s(%s) := %s : %s\nEnd" t.name
@@ -74,12 +73,9 @@ and pp_axiom (a : axiom) =
     (pp_parameter_list a.parameter_list)
     (pp_expression a.proposition)
 
-and pp_toplevel = function 
-  | Theorem t -> pp_theorem t 
-  | Axiom a -> pp_axiom a
+and pp_toplevel = function Theorem t -> pp_theorem t | Axiom a -> pp_axiom a
 
 and pp_prog p =
   List.fold p ~init:"" ~f:(fun acc x ->
       if String.is_empty acc then pp_toplevel x
       else sprintf "%s\n\n%s" acc (pp_toplevel x))
-

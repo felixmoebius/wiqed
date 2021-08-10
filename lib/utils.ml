@@ -14,9 +14,7 @@ let resfold l ~init ~f =
   let rec loop xl acc =
     match xl with
     | [] -> return acc
-    | x :: l' ->
-      (match f acc x with
-      | Ok r -> loop r l'
-      | Error e -> Result.fail e
-      )   
-  in loop l init
+    | x :: l' -> (
+        match f acc x with Ok r -> loop r l' | Error e -> Result.fail e )
+  in
+  loop l init
