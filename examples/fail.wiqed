@@ -1,0 +1,3 @@
+Definition
+    Wrong(a: *, b: *, x: a, f: pi a. b) := x : b
+End
