@@ -69,7 +69,7 @@ Or
 $ dune exec ./bin/wiqed.exe examples/fail.wiqed
 checking Wrong...error
 expected b
-but infered type is a
+but inferred type is a
 ```
 
 ## Tracing

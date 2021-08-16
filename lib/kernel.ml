@@ -90,7 +90,7 @@ let rec check_type ~trace (universe : Universe.t) (context : Context.t) (term : 
   in
   let typ' = normalize universe typ in
   let error =
-    sprintf "expected %s\nbut infered type is %s" (Term.string_of_exp typ')
+    sprintf "expected %s\nbut inferred type is %s" (Term.string_of_exp typ')
       (Term.string_of_exp t)
   in
   alpha_eq t typ' |> Result.ok_if_true ~error
