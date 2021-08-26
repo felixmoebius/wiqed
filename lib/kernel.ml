@@ -67,7 +67,7 @@ for alpha-convertibility *)
 let check_arg_lengths (lu : Term.t list) lxa =
   let error = "arg length mismatch" in
   Result.ok_if_true List.(equal_int (length lu) (length lxa)) ~error
-
+(* 
 let _debug ctx exp d =
   if Int.equal d 0 then Stdio.print_string "\n";
   Stdio.print_endline
@@ -81,7 +81,17 @@ let _debug ctx exp d =
               (List.map (List.rev ctx) ~f:(fun (n, t) ->
                    String.concat [ "("; n; ": "; Term.string_of_exp t; "), " ]))
               [ " |- "; Term.string_of_exp exp ]);
-       ])
+       ]) *)
+
+let print_trace ctx exp d =
+  let open Stdio in
+  if Int.equal d 0 then print_endline "";
+  printf "(%d)" d;
+  List.iteri ctx ~f:(fun i (n, e) ->
+    let sep = if Int.equal i 0 then "" else "," in 
+    printf "%s %s: %s" sep n (Term.string_of_exp e)
+  );
+  printf " |- %s\n" (Term.string_of_exp exp)
 
 let rec check_type ~trace (universe : Universe.t) (context : Context.t) (term : Term.t)
     (typ : Term.t) (depth : int) =
@@ -99,7 +109,7 @@ and infer_type ~trace (universe : Universe.t) (context : Context.t) (term : Term
     (depth : int) =
   let open Term in
 
-  if trace then _debug context term depth;
+  if trace then print_trace context term depth;
 
   match term with
   | Star -> rule_axiom_or_weak ~trace universe context term depth
