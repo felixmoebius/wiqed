@@ -6,6 +6,9 @@
 
 Wiqed is a barebones theorem prover based on the calculus of constructions with support for definitions as presented in [Type Theory and Formal Proof](https://www.cambridge.org/core/books/type-theory-and-formal-proof/0472640AAD34E045C7F140B46A57A67C).
 
+The implementation uses a _locally nameless representation_ as presented [here](https://repository.upenn.edu/cgi/viewcontent.cgi?article=1394&context=cis_papers), but extended to work with the calculus of constructions and definitions.
+The relevant parts of the type checker can be found in [kernel.ml](./lib/kernel.ml) and [term.ml](./lib/term.ml).
+
 Note: This is a personal project to study the basic mechanisms that go into theorem provers like Coq. Wiqed is not production ready software.
 
 ## Installation
