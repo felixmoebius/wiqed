@@ -60,28 +60,9 @@ let rec alpha_eq e1 e2 =
   (* unequal in all other cases *)
   | _ -> false
 
-(* check for beta-equality by checking the normalized term
-for alpha-convertibility *)
-(* let equal universe e1 e2 = alpha_eq (normalize universe e1) (normalize universe e2) *)
-
 let check_arg_lengths (lu : Term.t list) lxa =
   let error = "arg length mismatch" in
   Result.ok_if_true List.(equal_int (length lu) (length lxa)) ~error
-(* 
-let _debug ctx exp d =
-  if Int.equal d 0 then Stdio.print_string "\n";
-  Stdio.print_endline
-    (String.concat
-       [
-         "(";
-         Int.to_string d;
-         ") ";
-         String.concat
-           (List.append
-              (List.map (List.rev ctx) ~f:(fun (n, t) ->
-                   String.concat [ "("; n; ": "; Term.string_of_exp t; "), " ]))
-              [ " |- "; Term.string_of_exp exp ]);
-       ]) *)
 
 let print_trace ctx exp d =
   let open Stdio in
